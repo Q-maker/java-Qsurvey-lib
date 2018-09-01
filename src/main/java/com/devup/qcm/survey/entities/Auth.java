@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 public class Auth implements JSONable {
+    public final static String GRAND_TYPE_FIREBASE = "firebase";
+    public final static String GRAND_TYPE_FTP = "ftp";
     public final static String GRAND_TYPE_PASSWORD = "password";
     public final static String GRAND_TYPE_REFRESH_TOKEN = "refresh_token";
     public final static String IDENTITY_USER_NAME = "username";

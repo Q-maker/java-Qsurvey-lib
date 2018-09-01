@@ -20,7 +20,7 @@ public class Survey {
 
     }
 
-    public final static Survey from(QPackage qPackage) throws IllegalArgumentException {
+    public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
         Survey survey = new Survey();
         survey.qPackage = qPackage;
         try {
@@ -30,7 +30,7 @@ public class Survey {
             survey.config = gson.fromJson(content, Config.class);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new IllegalArgumentException(e);
+            throw new InvalidSurveyException(e);
         }
         return survey;
     }
@@ -48,6 +48,16 @@ public class Survey {
 
         public URI getDestinationUri() {
             return QFileUtils.createURI(destinationUri);
+        }
+    }
+
+    public static class InvalidSurveyException extends Exception {
+        public InvalidSurveyException(Throwable e) {
+            super(e);
+        }
+
+        public InvalidSurveyException(String message) {
+            super(message);
         }
     }
 
