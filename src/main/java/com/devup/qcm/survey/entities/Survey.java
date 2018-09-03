@@ -1,6 +1,7 @@
 package com.devup.qcm.survey.entities;
 
 import com.devup.qcm.core.io.QPackage;
+import com.devup.qcm.core.utils.Bundle;
 import com.devup.qcm.core.utils.QFileUtils;
 import com.google.gson.Gson;
 
@@ -45,6 +46,11 @@ public class Survey {
         public String destinationUri;
         public String message;
         public String type = TYPE_ANONYMOUS;
+        Bundle extras;
+
+        public Bundle getExtras() {
+            return extras;
+        }
 
         public URI getDestinationUri() {
             return QFileUtils.createURI(destinationUri);

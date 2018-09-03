@@ -8,9 +8,10 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 public class Auth implements JSONable {
+    public final static String GRAND_TYPE_WSSE = "wsse";
     public final static String GRAND_TYPE_FIREBASE = "firebase";
     public final static String GRAND_TYPE_FTP = "ftp";
-    public final static String GRAND_TYPE_PASSWORD = "password";
+    public final static String GRAND_TYPE_HTTP_BASIC = "http_basic";
     public final static String GRAND_TYPE_REFRESH_TOKEN = "refresh_token";
     public final static String IDENTITY_USER_NAME = "username";
     public final static String IDENTITY_PASSWORD = "password";
@@ -73,7 +74,7 @@ public class Auth implements JSONable {
             JSONObject jsonIdentity = new JSONObject();
             Gson gson = new Gson();
             JSONObject jsonIdentityContent = new JSONObject(gson.toJson(identity));
-            jsonIdentity.put(grandType.equals(GRAND_TYPE_PASSWORD) ? FIELD_IDENTITY_USER : FIELD_IDENTITY_TOKEN, jsonIdentityContent);
+            jsonIdentity.put(grandType.equals(GRAND_TYPE_HTTP_BASIC) ? FIELD_IDENTITY_USER : FIELD_IDENTITY_TOKEN, jsonIdentityContent);
             json.put(FIELD_IDENTITY, jsonIdentity);
             return json;
         } catch (Exception e) {
@@ -84,7 +85,7 @@ public class Auth implements JSONable {
 
     public static Auth fromPassword(String username, String password) {
         Auth auth = new Auth();
-        auth.setGrandType(GRAND_TYPE_PASSWORD);
+        auth.setGrandType(GRAND_TYPE_HTTP_BASIC);
         auth.putParam(Auth.IDENTITY_USER_NAME, username);
         auth.putParam(Auth.IDENTITY_PASSWORD, password);
         return auth;
