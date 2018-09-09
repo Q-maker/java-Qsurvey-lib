@@ -17,21 +17,30 @@ import java.util.List;
 
 public class QSurvey implements QRunner.RunStateListener {
     static QSurvey instance;
-    Context context;
     final List<SurveyStateListener> listeners = new ArrayList<>();
     final HashMap<String, Pusher> pusherMap = new HashMap<>();
 
-    private QSurvey(Context context) {
-        this.context = context;
+    private QSurvey() {
+        populatePusherMap();
     }
 
-    public static QSurvey init(Context context) {
-        if (instance == null) {
-            instance = new QSurvey(context);
-            instance.init();
-        }
-        return instance;
+    private void populatePusherMap() {
+
     }
+
+    public QSurvey appendPusher(Pusher pusher) {
+        String supported = pusher.getSupportedGrandType();
+        pusherMap.put(supported, pusher);
+        return this;
+    }
+
+//    public static QSurvey init(Context context) {
+//        if (instance == null) {
+//            instance = new QSurvey(context);
+//            instance.init();
+//        }
+//        return instance;
+//    }
 
     public static QSurvey getInstance() {
         return instance;
@@ -110,25 +119,7 @@ public class QSurvey implements QRunner.RunStateListener {
     }
 
     private Pusher getPusher(Survey survey) {
-        switch (survey.getConfig().auth.getGrandType()) {
-            case Auth.GRAND_TYPE_HTTP_BASIC:
-
-                break;
-
-            case Auth.GRAND_TYPE_WSSE:
-
-                break;
-
-            case Auth.GRAND_TYPE_FTP:
-
-                break;
-
-            case Auth.GRAND_TYPE_REFRESH_TOKEN:
-
-                break;
-
-        }
-        return null;
+        return pusherMap.get(survey.getConfig().auth.getGrandType());
     }
 
     @Override
