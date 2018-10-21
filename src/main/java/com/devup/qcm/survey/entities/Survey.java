@@ -1,5 +1,7 @@
 package com.devup.qcm.survey.entities;
 
+import com.devup.qcm.core.engines.Component;
+import com.devup.qcm.core.engines.ComponentManager;
 import com.devup.qcm.core.io.QPackage;
 import com.devup.qcm.core.utils.Bundle;
 import com.devup.qcm.core.utils.QFileUtils;
@@ -12,49 +14,38 @@ import java.net.URI;
 import istat.android.base.tools.ToolKits;
 
 public class Survey {
-    final static String RES_SECTION = "x-survey";
-    final static String RES_CONFIG_NAME = "config";
-    Config config;
-    QPackage qPackage;
+    final static String TAG = "survey";
+    Component component;
 
-    private Survey() {
-
+    private Survey(Component component) {
+        this.component = component;
     }
 
     public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
-        Survey survey = new Survey();
-        survey.qPackage = qPackage;
-        try {
-            Gson gson = new Gson();
-            InputStream configStream = survey.qPackage.getResource().getEntry(RES_SECTION, RES_CONFIG_NAME).openInputStream();
-            String content = ToolKits.Stream.streamToString(configStream);
-            survey.config = gson.fromJson(content, Config.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new InvalidSurveyException(e);
+        Component component = ComponentManager.getInstance().fetch(qPackage).getComponent(TAG);
+        if (component == null) {
+            return null;
         }
-        return survey;
+        return new Survey(component);
     }
 
-    public Config getConfig() {
-        return config;
+    public QPackage getQpackage() {
+        return component.getQPackage();
     }
 
-    public static class Config {
-        public final static String TYPE_ANONYMOUS = "anonymous";
-        public Auth auth;
-        public String destinationUri;
-        public String message;
-        public String type = TYPE_ANONYMOUS;
-        Bundle extras;
+    public final static String TYPE_ANONYMOUS = "anonymous";
+    public Auth auth;
+    public String destinationUri;
+    public String message;
+    public String type = TYPE_ANONYMOUS;
+    Bundle extras;
 
-        public Bundle getExtras() {
-            return extras;
-        }
+    public Bundle getExtras() {
+        return extras;
+    }
 
-        public URI getDestinationUri() {
-            return QFileUtils.createURI(destinationUri);
-        }
+    public URI getDestinationUri() {
+        return QFileUtils.createURI(destinationUri);
     }
 
     public static class InvalidSurveyException extends Exception {

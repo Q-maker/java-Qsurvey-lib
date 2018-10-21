@@ -119,7 +119,7 @@ public class QSurvey implements QRunner.RunStateListener {
     }
 
     private Pusher getPusher(Survey survey) {
-        return pusherMap.get(survey.getConfig().auth.getGrandType());
+        return pusherMap.get(survey.auth.getGrandType());
     }
 
     @Override
