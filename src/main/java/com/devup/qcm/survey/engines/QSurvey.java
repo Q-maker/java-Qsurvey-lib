@@ -98,7 +98,7 @@ public class QSurvey implements QRunner.RunStateListener {
             if (survey == null) {
                 return;
             }
-            getPusher(survey).push(test.getCopySheet(), createPushCallback(survey, test.getCopySheet()));
+            //getPusher(survey).push(test.getCopySheet(), createPushCallback(survey, test.getCopySheet()));
             dispatchSurveyCompleted(survey, test);
         } catch (Survey.InvalidSurveyException e) {
             //Nothing to do, qpackake is not a survey.
@@ -118,9 +118,9 @@ public class QSurvey implements QRunner.RunStateListener {
         return null;
     }
 
-    private Pusher getPusher(Survey survey) {
-        return pusherMap.get(survey.auth.getGrandType());
-    }
+//    private Pusher getPusher(Survey survey) {
+//        return pusherMap.get(survey.auth.getGrandType());
+//    }
 
     @Override
     public void onResetRunner(QPackage qPackage, Test test) {

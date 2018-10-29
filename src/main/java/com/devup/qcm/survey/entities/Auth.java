@@ -16,6 +16,7 @@ public class Auth implements JSONable {
     public final static String IDENTITY_USER_NAME = "username";
     public final static String IDENTITY_PASSWORD = "password";
     public final static String IDENTITY_TOKEN_ID = "id";
+    String targetUri;
     String grandType;
     HashMap<String, String> identity = new HashMap<>();
 
@@ -36,26 +37,34 @@ public class Auth implements JSONable {
         this.grandType = grandType;
     }
 
+    public void setTargetUri(String targetUri) {
+        this.targetUri = targetUri;
+    }
+
+    public String getTargetUri() {
+        return targetUri;
+    }
+
     /*
-       {
-        "grant_type": "password",
-        "identity": {
-         "user": {
-          "username": "test2018",
-          "password": "admin@2018"
-         }
-        }
-       }
-       ---------------------------------
-       {
-        "grant_type": "refresh_token",
-        "identity": {
-         "token": {
-          "id": "d_xQXP81d0L4a9mPbo8xAixAJy4Baj-KrLuV1hhlGpDC1yYXJG_9G5Olarz9Yopb"
-         }
-        }
-       }
-        */
+               {
+                "grant_type": "password",
+                "identity": {
+                 "user": {
+                  "username": "test2018",
+                  "password": "admin@2018"
+                 }
+                }
+               }
+               ---------------------------------
+               {
+                "grant_type": "refresh_token",
+                "identity": {
+                 "token": {
+                  "id": "d_xQXP81d0L4a9mPbo8xAixAJy4Baj-KrLuV1hhlGpDC1yYXJG_9G5Olarz9Yopb"
+                 }
+                }
+               }
+                */
     final static String FIELD_GRAND_TYPE = "grant_type";
     final static String FIELD_IDENTITY = "identity";
     final static String FIELD_IDENTITY_TOKEN = "token";

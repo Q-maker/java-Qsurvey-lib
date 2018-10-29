@@ -3,19 +3,17 @@ package com.devup.qcm.survey.entities;
 import com.devup.qcm.core.engines.Component;
 import com.devup.qcm.core.engines.ComponentManager;
 import com.devup.qcm.core.io.QPackage;
-import com.devup.qcm.core.utils.Bundle;
-import com.devup.qcm.core.utils.QFileUtils;
-import com.google.gson.Gson;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
-import istat.android.base.tools.ToolKits;
-
+//Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
 public class Survey {
     final static String TAG = "survey";
     Component component;
+    public static String FIELD_TYPE = "type",
+            FIELD_AUTH_LIST = "auth",
+            FIELD_DEFAULT_MESSAGE = "message";
 
     private Survey(Component component) {
         this.component = component;
@@ -24,28 +22,28 @@ public class Survey {
     public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
         Component component = ComponentManager.getInstance().fetch(qPackage).getComponent(TAG);
         if (component == null) {
-            return null;
+            throw new InvalidSurveyException();
         }
         return new Survey(component);
     }
 
-    public QPackage getQpackage() {
+    public QPackage getQPackage() {
         return component.getQPackage();
     }
 
     public final static String TYPE_ANONYMOUS = "anonymous";
-    public Auth auth;
-    public String destinationUri;
-    public String message;
-    public String type = TYPE_ANONYMOUS;
-    Bundle extras;
+    List<Auth> authList;
 
-    public Bundle getExtras() {
-        return extras;
+    public List<Auth> getAuthList() throws IllegalAccessException, InstantiationException {
+        if (authList != null) {
+            return authList;
+        }
+        authList = Collections.unmodifiableList(component.getSummaryProperties(FIELD_AUTH_LIST, List.class));
+        return authList;
     }
 
-    public URI getDestinationUri() {
-        return QFileUtils.createURI(destinationUri);
+    public String getDefaultMessage() {
+        return component.getSummaryStringProperty(FIELD_DEFAULT_MESSAGE);
     }
 
     public static class InvalidSurveyException extends Exception {
@@ -55,6 +53,10 @@ public class Survey {
 
         public InvalidSurveyException(String message) {
             super(message);
+        }
+
+        public InvalidSurveyException() {
+            super("This qpackage doesn't content any Survey component.");
         }
     }
 

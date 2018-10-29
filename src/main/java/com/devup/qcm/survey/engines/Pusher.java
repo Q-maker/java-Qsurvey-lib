@@ -9,7 +9,7 @@ import com.devup.qcm.survey.process.PushResult;
 
 public abstract class Pusher {
     public final PushProcess push(CopySheet copySheet, Pusher.Callback callback) {
-        return push(new PushOrder(copySheet), callback);
+        return push(new PushOrder(copySheet, null), callback);
     }
 
     public final PushProcess push(PushOrder pushOrder, Pusher.Callback callback) {
