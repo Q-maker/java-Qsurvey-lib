@@ -1,13 +1,10 @@
 package com.devup.qcm.survey.engines;
 
-import android.content.Context;
-
 import com.devup.qcm.core.engines.QRunner;
 import com.devup.qcm.core.entities.CopySheet;
 import com.devup.qcm.core.entities.Exercise;
 import com.devup.qcm.core.entities.Test;
 import com.devup.qcm.core.io.QPackage;
-import com.devup.qcm.survey.entities.Auth;
 import com.devup.qcm.survey.entities.PushOrder;
 import com.devup.qcm.survey.entities.Survey;
 
@@ -57,52 +54,54 @@ public class QSurvey implements QRunner.RunStateListener {
     }
 
     @Override
-    public void onRunnerPrepare(String uri) {
-
+    public boolean onRunnerPrepare(String uri) {
+        return false;
     }
 
     @Override
-    public void onRunnerPrepared(QRunner.PrepareResult result) {
-
+    public boolean onRunnerPrepared(QRunner.PrepareResult result) {
+        return false;
     }
 
     @Override
-    public void onStartRunning(QPackage qPackage, Test test) {
-
+    public boolean onStartRunning(QPackage qPackage, Test test) {
+        return false;
     }
 
     @Override
-    public void onRunnerTimeTick(QPackage qPackage, Test test) {
-
+    public boolean onRunnerTimeTick(QPackage qPackage, Test test) {
+        return false;
     }
 
     @Override
-    public void onRunningExerciseChanged(QPackage qPackage, Test test, Exercise exercise, int exerciseIndex) {
-
+    public boolean onRunningExerciseChanged(QPackage qPackage, Test test, Exercise exercise, int exerciseIndex) {
+        return false;
     }
 
     @Override
-    public void onRunningTimeOut(QPackage qPackage, Test test) {
-
+    public boolean onRunningTimeOut(QPackage qPackage, Test test) {
+        return false;
     }
 
     @Override
-    public void onRunCanceled(QPackage qPackage, Test test) {
-
+    public boolean onRunCanceled(QPackage qPackage, Test test) {
+        return false;
     }
 
     @Override
-    public void onFinishRunning(QPackage qPackage, Test test) {
+    public boolean onFinishRunning(QPackage qPackage, Test test) {
         try {
             Survey survey = Survey.from(qPackage);
             if (survey == null) {
-                return;
+                //TODO detecter si il sagit d'un Survey Aynchrone ou synchrone et empêcher l'exercise de prendre drat de la fin du Test.
+                return false;
             }
             //getPusher(survey).push(test.getCopySheet(), createPushCallback(survey, test.getCopySheet()));
             dispatchSurveyCompleted(survey, test);
         } catch (Survey.InvalidSurveyException e) {
             //Nothing to do, qpackake is not a survey.
         }
+        return false;
     }
 
     private void dispatchSurveyCompleted(Survey survey, Test test) {
@@ -123,8 +122,8 @@ public class QSurvey implements QRunner.RunStateListener {
 //    }
 
     @Override
-    public void onResetRunner(QPackage qPackage, Test test) {
-
+    public boolean onResetRunner(QPackage qPackage, Test test) {
+        return false;
     }
 
     public boolean registerSurveyStateListener(SurveyStateListener listener) {
