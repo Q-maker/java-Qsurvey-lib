@@ -93,15 +93,15 @@ public class QSurvey implements QRunner.RunStateListener {
         try {
             Survey survey = Survey.from(qPackage);
             if (survey == null) {
-                //TODO detecter si il sagit d'un Survey Aynchrone ou synchrone et empêcher l'exercise de prendre drat de la fin du Test.
                 return false;
             }
+            //TODO detecter si il sagit d'un Survey Aynchrone ou synchrone et empêcher l'exercise de prendre drat de la fin du Test.
             //getPusher(survey).push(test.getCopySheet(), createPushCallback(survey, test.getCopySheet()));
             dispatchSurveyCompleted(survey, test);
         } catch (Survey.InvalidSurveyException e) {
             //Nothing to do, qpackake is not a survey.
         }
-        return false;
+        return true;
     }
 
     private void dispatchSurveyCompleted(Survey survey, Test test) {
