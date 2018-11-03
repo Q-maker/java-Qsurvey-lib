@@ -1,8 +1,8 @@
-package com.devup.qcm.survey.entities;
+package com.qmaker.survey.core.entities;
 
-import com.devup.qcm.core.engines.Component;
-import com.devup.qcm.core.engines.ComponentManager;
-import com.devup.qcm.core.io.QPackage;
+import com.qmaker.core.engines.Component;
+import com.qmaker.core.engines.ComponentManager;
+import com.qmaker.core.io.QPackage;
 
 import java.util.Collections;
 import java.util.List;

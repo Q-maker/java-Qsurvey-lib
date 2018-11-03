@@ -1,12 +1,12 @@
-package com.devup.qcm.survey.engines;
+package com.qmaker.survey.core.engines;
 
-import com.devup.qcm.core.engines.QRunner;
-import com.devup.qcm.core.entities.CopySheet;
-import com.devup.qcm.core.entities.Exercise;
-import com.devup.qcm.core.entities.Test;
-import com.devup.qcm.core.io.QPackage;
-import com.devup.qcm.survey.entities.PushOrder;
-import com.devup.qcm.survey.entities.Survey;
+import com.qmaker.core.engines.QRunner;
+import com.qmaker.core.entities.CopySheet;
+import com.qmaker.core.entities.Exercise;
+import com.qmaker.core.entities.Test;
+import com.qmaker.core.io.QPackage;
+import com.qmaker.survey.core.entities.PushOrder;
+import com.qmaker.survey.core.entities.Survey;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,7 @@ public class QSurvey implements QRunner.RunStateListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
     final HashMap<String, Pusher> pusherMap = new HashMap<>();
+    PersistenceUnit persistenceUnit;
 
     private QSurvey() {
         populatePusherMap();
@@ -31,15 +32,11 @@ public class QSurvey implements QRunner.RunStateListener {
         return this;
     }
 
-//    public static QSurvey init(Context context) {
-//        if (instance == null) {
-//            instance = new QSurvey(context);
-//            instance.init();
-//        }
-//        return instance;
-//    }
-
     public static QSurvey getInstance() {
+        if (instance == null) {
+            instance = new QSurvey();
+            instance.init();
+        }
         return instance;
     }
 
@@ -49,7 +46,7 @@ public class QSurvey implements QRunner.RunStateListener {
     }
 
     public QSurvey setPersistanceUnit(PersistenceUnit pUnit) {
-
+        this.persistenceUnit = persistenceUnit;
         return this;
     }
 
@@ -157,11 +154,11 @@ public class QSurvey implements QRunner.RunStateListener {
     //TODO doit prevoir une method pour supprimé tous es ordre dja pushé.
     public interface PersistenceUnit {
 
-        void persist(PushOrder order);
+        boolean persist(PushOrder order);
 
         List<PushOrder> findAll();
 
-        void delete(PushOrder order);
+        boolean delete(PushOrder order);
 
     }
 

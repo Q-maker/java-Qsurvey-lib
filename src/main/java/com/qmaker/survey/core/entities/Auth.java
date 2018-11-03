@@ -1,6 +1,6 @@
-package com.devup.qcm.survey.entities;
+package com.qmaker.survey.core.entities;
 
-import com.devup.qcm.core.interfaces.JSONable;
+import com.qmaker.core.interfaces.JSONable;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;

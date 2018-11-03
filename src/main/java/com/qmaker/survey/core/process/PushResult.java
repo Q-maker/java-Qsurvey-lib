@@ -1,6 +1,6 @@
-package com.devup.qcm.survey.process;
+package com.qmaker.survey.core.process;
 
-import com.devup.qcm.survey.entities.PushOrder;
+import com.qmaker.survey.core.entities.PushOrder;
 
 public class PushResult implements PushResponse {
     private final PushOrder content;

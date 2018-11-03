@@ -1,6 +1,6 @@
-package com.devup.qcm.survey.entities;
+package com.qmaker.survey.core.entities;
 
-import com.devup.qcm.core.entities.CopySheet;
+import com.qmaker.core.entities.CopySheet;
 
 import java.util.ArrayList;
 import java.util.List;

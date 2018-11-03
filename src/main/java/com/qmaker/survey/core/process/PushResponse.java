@@ -1,7 +1,6 @@
-package com.devup.qcm.survey.process;
+package com.qmaker.survey.core.process;
 
-import com.devup.qcm.core.entities.CopySheet;
-import com.devup.qcm.survey.entities.PushOrder;
+import com.qmaker.survey.core.entities.PushOrder;
 
 public interface PushResponse {
     int CODE_DEFAULT_SUCCESS = 200, CODE_DEFAULT_FAILD = 400;
