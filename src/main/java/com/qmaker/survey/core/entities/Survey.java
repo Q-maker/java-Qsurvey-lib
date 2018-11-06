@@ -12,7 +12,7 @@ public class Survey {
     final static String TAG = "survey";
     Component component;
     public static String FIELD_TYPE = "type",
-            FIELD_AUTH_LIST = "auth",
+            FIELD_AUTH_LIST = "repository",
             FIELD_DEFAULT_MESSAGE = "message";
 
     private Survey(Component component) {
@@ -32,14 +32,14 @@ public class Survey {
     }
 
     public final static String TYPE_ANONYMOUS = "anonymous";
-    List<Auth> authList;
+    List<Repository> repositories;
 
-    public List<Auth> getAuthList() throws IllegalAccessException, InstantiationException {
-        if (authList != null) {
-            return authList;
+    public List<Repository> getRepositories() throws IllegalAccessException, InstantiationException {
+        if (repositories != null) {
+            return repositories;
         }
-        authList = Collections.unmodifiableList(component.getSummaryProperties(FIELD_AUTH_LIST, List.class));
-        return authList;
+        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_AUTH_LIST, List.class));
+        return repositories;
     }
 
     public String getDefaultMessage() {

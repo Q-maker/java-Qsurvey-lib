@@ -18,11 +18,11 @@ public class PushOrder {
     long doneAt;
     int state;
     CopySheet copySheet;
-    Auth auth;
+    Repository repository;
 
-    public PushOrder(CopySheet copySheet, Auth auth) {
+    public PushOrder(CopySheet copySheet, Repository auth) {
         this.copySheet = copySheet;
-        this.auth = auth;
+        this.repository = auth;
     }
 
     public void notifyModified() {
@@ -63,14 +63,14 @@ public class PushOrder {
         return copySheet;
     }
 
-    public Auth getAuth() {
-        return auth;
+    public Repository getRepository() {
+        return repository;
     }
 
     public static List<PushOrder> listFrom(Survey survey, CopySheet copySheet) throws InstantiationException, IllegalAccessException {
-        List<Auth> authList = survey.getAuthList();
+        List<Repository> authList = survey.getRepositories();
         List<PushOrder> out = new ArrayList<>();
-        for (Auth auth : authList) {
+        for (Repository auth : authList) {
             out.add(new PushOrder(copySheet, auth));
         }
         return out;

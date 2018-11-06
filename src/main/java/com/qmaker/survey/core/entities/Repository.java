@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class Auth implements JSONable {
+public class Repository implements JSONable {
     public final static String GRAND_TYPE_WSSE = "wsse";
     public final static String GRAND_TYPE_FIREBASE = "firebase";
     public final static String GRAND_TYPE_FTP = "ftp";
@@ -16,16 +16,16 @@ public class Auth implements JSONable {
     public final static String IDENTITY_USER_NAME = "username";
     public final static String IDENTITY_PASSWORD = "password";
     public final static String IDENTITY_TOKEN_ID = "id";
-    String targetUri;
+    String uri;
     String grandType;
     HashMap<String, String> identity = new HashMap<>();
 
-    public Auth putParam(String name, String value) {
+    public Repository putIdentity(String name, String value) {
         identity.put(name, value);
         return this;
     }
 
-    public String getParam(String name) {
+    public String getIdentity(String name) {
         return identity.get(name);
     }
 
@@ -37,12 +37,12 @@ public class Auth implements JSONable {
         this.grandType = grandType;
     }
 
-    public void setTargetUri(String targetUri) {
-        this.targetUri = targetUri;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
-    public String getTargetUri() {
-        return targetUri;
+    public String getUri() {
+        return uri;
     }
 
     /*
@@ -92,18 +92,34 @@ public class Auth implements JSONable {
         }
     }
 
-    public static Auth fromPassword(String username, String password) {
-        Auth auth = new Auth();
+    public static Repository fromHttpBasic(String username, String password) {
+        Repository auth = new Repository();
         auth.setGrandType(GRAND_TYPE_HTTP_BASIC);
-        auth.putParam(Auth.IDENTITY_USER_NAME, username);
-        auth.putParam(Auth.IDENTITY_PASSWORD, password);
+        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
         return auth;
     }
 
-    public static Auth fromRefreshToken(String tokenId) {
-        Auth auth = new Auth();
+    public static Repository fromWsse(String username, String password) {
+        Repository auth = new Repository();
+        auth.setGrandType(GRAND_TYPE_WSSE);
+        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
+        return auth;
+    }
+
+    public static Repository fromFtp(String username, String password) {
+        Repository auth = new Repository();
+        auth.setGrandType(GRAND_TYPE_FTP);
+        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
+        return auth;
+    }
+
+    public static Repository fromRefreshToken(String tokenId) {
+        Repository auth = new Repository();
         auth.setGrandType(GRAND_TYPE_REFRESH_TOKEN);
-        auth.putParam(Auth.IDENTITY_TOKEN_ID, tokenId);
+        auth.putIdentity(Repository.IDENTITY_TOKEN_ID, tokenId);
         return auth;
     }
 }
