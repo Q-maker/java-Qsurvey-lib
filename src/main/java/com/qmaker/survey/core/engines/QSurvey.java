@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class QSurvey implements QRunner.RunStateListener {
+public class QSurvey implements QRunner.StateListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
     final HashMap<String, Pusher> pusherMap = new HashMap<>();
@@ -42,7 +42,7 @@ public class QSurvey implements QRunner.RunStateListener {
 
 
     private void init() {
-        QRunner.getInstance().registerRunStateListener(0, this);
+        QRunner.getInstance().registerStateListener(0, this);
     }
 
     public QSurvey setPersistanceUnit(PersistenceUnit pUnit) {
