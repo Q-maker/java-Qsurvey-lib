@@ -122,4 +122,8 @@ public class Repository implements JSONable {
         auth.putIdentity(Repository.IDENTITY_TOKEN_ID, tokenId);
         return auth;
     }
+
+    public static class Definition {
+
+    }
 }
