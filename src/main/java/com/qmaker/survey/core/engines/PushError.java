@@ -1,11 +1,11 @@
-package com.qmaker.survey.core.process;
+package com.qmaker.survey.core.engines;
 
 import com.qmaker.survey.core.entities.PushOrder;
 
 public class PushError extends Exception implements PushResponse {
     private final PushOrder content;
     PushOrder order;
-    int code = CODE_DEFAULT_FAILD;
+    int code = CODE_DEFAULT_FAILED;
 
     public PushError(String message, int code, PushOrder content) {
         this(null, message, code, content);

@@ -9,13 +9,13 @@ import com.qmaker.survey.core.entities.PushOrder;
 import com.qmaker.survey.core.entities.Survey;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.List;
 
 public class QSurvey implements QRunner.StateListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
-    final HashMap<String, Pusher> pusherMap = new HashMap<>();
+//    final HashMap<String, Pusher> pusherMap = new HashMap<>();
     PersistenceUnit persistenceUnit;
 
     private QSurvey() {
@@ -26,11 +26,11 @@ public class QSurvey implements QRunner.StateListener {
 
     }
 
-    public QSurvey appendPusher(Pusher pusher) {
-        String supported = pusher.getSupportedGrandType();
-        pusherMap.put(supported, pusher);
-        return this;
-    }
+//    public QSurvey appendPusher(Pusher pusher) {
+//        String supported = pusher.getSupportedGrandType();
+////        pusherMap.put(supported, pusher);
+//        return this;
+//    }
 
     public static QSurvey getInstance() {
         if (instance == null) {
@@ -109,10 +109,10 @@ public class QSurvey implements QRunner.StateListener {
         }
     }
 
-    //TODO implementer le push callback.
-    private Pusher.Callback createPushCallback(Survey survey, CopySheet copySheet) {
-        return null;
-    }
+//    //TODO implementer le push callback.
+//    private Pusher.Callback createPushCallback(Survey survey, CopySheet copySheet) {
+//        return null;
+//    }
 
 //    private Pusher getPusher(Survey survey) {
 //        return pusherMap.get(survey.auth.getGrandType());
