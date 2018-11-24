@@ -1,13 +1,14 @@
 package com.qmaker.survey.core.engines;
 
-import com.qmaker.survey.core.entities.PushOrder;
 
 public interface PushResponse {
-    int CODE_DEFAULT_SUCCESS = 200, CODE_DEFAULT_FAILED = 400;
+    int CODE_DEFAULT_SUCCESS = 200,
+            CODE_DEFAULT_ERROR = 400,
+            CODE_FAILED = -1;
 
     String getMessage();
 
     int getCode();
 
-    PushOrder getContent();
+    <T> T getContent();
 }

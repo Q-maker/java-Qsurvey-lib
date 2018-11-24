@@ -4,9 +4,12 @@ import com.qmaker.survey.core.entities.PushOrder;
 
 public class PushResult implements PushResponse {
     private final PushOrder content;
-    PushOrder order;
     String message;
     int code = CODE_DEFAULT_SUCCESS;
+
+    public PushResult(PushOrder content) {
+        this("success", CODE_DEFAULT_SUCCESS, content);
+    }
 
     public PushResult(String message, int code, PushOrder content) {
         this.message = message;
@@ -26,6 +29,6 @@ public class PushResult implements PushResponse {
 
     @Override
     public PushOrder getContent() {
-        return order;
+        return content;
     }
 }

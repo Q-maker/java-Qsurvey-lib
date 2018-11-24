@@ -1,5 +1,7 @@
 package com.qmaker.survey.core.interfaces;
 
+import com.qmaker.survey.core.engines.PushResponse;
+
 public interface PushProcess {
     int STATE_SUCCESS = 0,
             STATE_ERROR = 1,
@@ -13,4 +15,8 @@ public interface PushProcess {
     boolean cancel();
 
     int getState();
+
+    PushResponse getResponse();
+
+    Throwable getFailCause();
 }

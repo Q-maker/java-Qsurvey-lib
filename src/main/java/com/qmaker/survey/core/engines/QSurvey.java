@@ -1,9 +1,11 @@
 package com.qmaker.survey.core.engines;
 
 import com.qmaker.core.engines.QRunner;
+import com.qmaker.core.engines.Qmaker;
 import com.qmaker.core.entities.CopySheet;
 import com.qmaker.core.entities.Exercise;
 import com.qmaker.core.entities.Test;
+import com.qmaker.core.interfaces.RunnableDispatcher;
 import com.qmaker.core.io.QPackage;
 import com.qmaker.survey.core.entities.PushOrder;
 import com.qmaker.survey.core.entities.Survey;
@@ -149,6 +151,41 @@ public class QSurvey implements QRunner.StateListener {
             listeners.add(listener);
         }
         return false;
+    }
+
+    public final static RunnableDispatcher DEFAULT_RUNNABLE_DISPATCHER = new RunnableDispatcher() {
+        @Override
+        public void dispatch(Runnable runnable, int delay) {
+            if (runnable != null) {
+                if (delay > 0) {
+                    try {
+                        Thread.sleep(delay);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                runnable.run();
+            }
+        }
+
+        @Override
+        public void cancel(Runnable runnable) {
+
+        }
+
+        @Override
+        public void release() {
+
+        }
+    };
+    static RunnableDispatcher defaultRunnableDispatcher = DEFAULT_RUNNABLE_DISPATCHER;
+
+    public static void setDefaultRunnableDispatcher(RunnableDispatcher defaultRunnableDispatcher) {
+        QSurvey.defaultRunnableDispatcher = defaultRunnableDispatcher != null ? defaultRunnableDispatcher : DEFAULT_RUNNABLE_DISPATCHER;
+    }
+
+    public static RunnableDispatcher getDefaultRunnableDispatcher() {
+        return defaultRunnableDispatcher;
     }
 
     //TODO doit prevoir une method pour supprimé tous es ordre dja pushé.
