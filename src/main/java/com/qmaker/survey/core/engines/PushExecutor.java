@@ -7,8 +7,6 @@ import com.qmaker.survey.core.interfaces.Pusher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 //TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
@@ -93,6 +91,25 @@ public final class PushExecutor {
         if (order == null) {
             return null;
         }
+        if (managedTaskIds.contains(order.getId())) {
+            Task retrievedTask = null;
+            List<Task> tasks = getManagedTasks();
+            for (Task t : tasks) {
+                if (t.getId().equals(order.getId())) {
+                    retrievedTask = t;
+                    break;
+                }
+            }
+            if (retrievedTask != null) {
+                if (processingTasks.contains(retrievedTask)) {
+                    reorderList(processingTasks, retrievedTask, priority);
+                } else if (pendingTasks.contains(retrievedTask)) {
+                    reorderList(pendingTasks, retrievedTask, priority);
+                }
+                return retrievedTask;
+            }
+
+        }
         synchronized (pendingTasks) {
             if (priority < 0 || priority >= pendingTasks.size()) {
                 priority = -1;
@@ -107,6 +124,16 @@ public final class PushExecutor {
                 managedTaskIds.add(task.getId());
             }
             return task;
+        }
+    }
+
+    private void reorderList(List<Task> pendingTasks, Task retrievedTask, int priority) {
+        synchronized (pendingTasks) {
+            int fromIndex = pendingTasks.indexOf(retrievedTask);
+            if (fromIndex < 0) {
+                return;
+            }
+            Collections.swap(pendingTasks, fromIndex, priority);
         }
     }
 
