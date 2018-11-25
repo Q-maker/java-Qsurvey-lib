@@ -53,6 +53,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     private void init() {
         QRunner.getInstance().registerStateListener(0, this);
+
     }
 
     public QSurvey usePersistanceUnit(PersistenceUnit pUnit) {
@@ -119,14 +120,19 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         }
     }
 
-//    //TODO implementer le push callback.
-//    private Pusher.Callback createPushCallback(Survey survey, CopySheet copySheet) {
-//        return null;
-//    }
-
-//    private Pusher getPusher(Survey survey) {
-//        return pusherMap.get(survey.auth.getGrandType());
-//    }
+    /**
+     * Execute all waiting PushOrder still present into the PersistenceUnit.
+     *
+     * @return
+     */
+    public List<PushOrder> executeLatentOrders() {
+        if (persistenceUnit == null) {
+            return new ArrayList();
+        }
+        List<PushOrder> orders = persistenceUnit.findAll();
+        getPushExecutor().enqueue(orders);
+        return orders;
+    }
 
     @Override
     public boolean onResetRunner(QPackage qPackage, Test test) {

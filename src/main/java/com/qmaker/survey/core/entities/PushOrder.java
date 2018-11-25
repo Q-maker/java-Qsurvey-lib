@@ -13,13 +13,14 @@ public class PushOrder {
             STATE_ABORTED = 4,
             STATE_STARTING = 5,
             STATE_PROCESSING = 6,
-            STATE_PENDING = 7;
+            STATE_PENDING = 7,
+            STATE_LATENT = 8;
     public final static String TAG = "pushOrder";
     String id;
     long createAt = System.currentTimeMillis();
     long lastModifiedAt = createAt;
     long doneAt;
-    int state;
+    int state = STATE_LATENT;
     CopySheet copySheet;
     Repository repository;
 

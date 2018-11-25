@@ -7,6 +7,8 @@ import com.qmaker.survey.core.interfaces.Pusher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 //TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
@@ -16,7 +18,6 @@ public final class PushExecutor {
     boolean running = false, paused = false;
 
     PushExecutor() {
-
     }
 
     //TODO géré un start apres un pause
@@ -77,6 +78,12 @@ public final class PushExecutor {
         return processingTasks;
     }
 
+    public List<Task> getManagedTasks() {
+        List<Task> tasks = new ArrayList<>(processingTasks);
+        tasks.addAll(pendingTasks);
+        return tasks;
+    }
+
     public Task enqueue(PushOrder order) {
         return enqueue(-1, order);
     }
@@ -98,11 +105,14 @@ public final class PushExecutor {
     }
 
     private void execute(Task task, Pusher.Callback callback) {
+        Pusher pusher = getPusher(task.getOrder());
         synchronized (processingTasks) {
-            Pusher pusher = getPusher(task.getOrder());
             processingTasks.add(task);
-            task.attachTo(pusher.push(task.getOrder(), createInternalChainCallback(task, callback)));
         }
+        synchronized (pendingTasks) {
+            pendingTasks.add(task);
+        }
+        task.attachTo(pusher.push(task.getOrder(), createInternalChainCallback(task, callback)));
     }
 
     private Pusher.Callback createInternalChainCallback(final Task task, final Pusher.Callback callback) {
@@ -235,12 +245,29 @@ public final class PushExecutor {
         }
     }
 
+    public List<Task> enqueue(List<PushOrder> orders) {
+        List<Task> tasks = new ArrayList();
+        for (PushOrder order : orders) {
+            tasks.add(enqueue(order));
+        }
+        return tasks;
+    }
+
+    public List<Task> enqueue(PushOrder... orders) {
+        List<Task> tasks = new ArrayList();
+        for (PushOrder order : orders) {
+            tasks.add(enqueue(order));
+        }
+        return tasks;
+    }
+
     public static class Task {
         PushOrder order;
         PushProcess process;
 
-        public Task(PushOrder order) {
+        Task(PushOrder order) {
             this.order = order;
+            this.order.setState(PushOrder.STATE_PENDING);
         }
 
         public int getState() {
