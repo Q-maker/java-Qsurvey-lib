@@ -42,6 +42,10 @@ public class Survey {
         return repositories;
     }
 
+    public Repository getRepository(int index) {
+        return repositories != null && repositories.size() < index ? repositories.get(index) : null;
+    }
+
     public String getDefaultMessage() {
         return component.getSummaryStringProperty(FIELD_DEFAULT_MESSAGE);
     }

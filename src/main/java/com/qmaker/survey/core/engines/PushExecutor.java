@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 //TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
+    final List<String> managedTaskIds = Collections.synchronizedList(new ArrayList<String>());
     final List<Task> pendingTasks = Collections.synchronizedList(new ArrayList<Task>());
     final List<Task> processingTasks = Collections.synchronizedList(new ArrayList<Task>());
     final List<ExecutionStateChangeListener> listeners = Collections.synchronizedList(new ArrayList<ExecutionStateChangeListener>());
@@ -20,7 +21,6 @@ public final class PushExecutor {
     PushExecutor() {
     }
 
-    //TODO géré un start apres un pause
     public boolean start() {
         if (running && !paused /*|| pendingTasks.isEmpty()*/) {
             return false;
@@ -90,6 +90,9 @@ public final class PushExecutor {
 
     //TODO reflechir, si on enqueue le meme ordre que ce passe t'il?
     public Task enqueue(int priority, PushOrder order) {
+        if (order == null) {
+            return null;
+        }
         synchronized (pendingTasks) {
             if (priority < 0 || priority >= pendingTasks.size()) {
                 priority = -1;
@@ -99,6 +102,9 @@ public final class PushExecutor {
                 pendingTasks.add(priority, task);
             } else {
                 pendingTasks.add(task);
+            }
+            synchronized (managedTaskIds) {
+                managedTaskIds.add(task.getId());
             }
             return task;
         }
@@ -157,8 +163,8 @@ public final class PushExecutor {
         synchronized (processingTasks) {
             processingTasks.remove(task);
         }
-        synchronized (pendingTasks) {
-            pendingTasks.remove(task);
+        synchronized (managedTaskIds) {
+            managedTaskIds.remove(task.getId());
         }
         Runnable runnable = new Runnable() {
             @Override
@@ -313,6 +319,9 @@ public final class PushExecutor {
 
         public void attachTo(PushProcess process) {
             this.process = process;
+            if (process != null) {
+                order.setState(PushOrder.STATE_PROCESSING);
+            }
         }
     }
 

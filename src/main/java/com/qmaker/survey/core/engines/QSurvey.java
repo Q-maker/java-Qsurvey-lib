@@ -31,12 +31,6 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         resetDefaultPusher();
     }
 
-//    public QSurvey appendPusher(Pusher pusher) {
-//        String supported = pusher.getSupportedGrandType();
-////        pusherMap.put(supported, pusher);
-//        return this;
-//    }
-
 
     public PushExecutor getPushExecutor() {
         return pushExecutor;
