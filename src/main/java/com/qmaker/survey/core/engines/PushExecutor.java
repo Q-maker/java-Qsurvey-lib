@@ -12,10 +12,14 @@ public final class PushExecutor {
     final List<Task> pendingTasks = new ArrayList();
     final List<Task> processingTasks = new ArrayList();
     final List<ExecutionStateChangeListener> listeners = Collections.synchronizedList(new ArrayList<ExecutionStateChangeListener>());
-    boolean running = false;
+    boolean running = false, paused = false;
+
+    PushExecutor() {
+
+    }
 
     public boolean start() {
-        if (running || pendingTasks.isEmpty()) {
+        if (running /*|| pendingTasks.isEmpty()*/) {
             return false;
         }
         this.running = true;
@@ -24,11 +28,29 @@ public final class PushExecutor {
     }
 
     public boolean pause() {
-        return false;
+        this.paused = true;
+        return this.running;
     }
 
-    public boolean cancel() {
-        return false;
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public int stop() {
+        int stoppedCount = 0;
+        for (Task task : processingTasks) {
+            if (task.cancel()) {
+                stoppedCount++;
+            }
+        }
+        return stoppedCount;
+    }
+
+    public int[] cancel() {
+        int[] out = {stop(), pendingTasks.size()};
+        pendingTasks.clear();
+        listeners.clear();
+        return out;
     }
 
     public boolean isProcessing() {
@@ -74,6 +96,7 @@ public final class PushExecutor {
         task.attachTo(pusher.push(task.getOrder(), createPushChainCallback(callback)));
     }
 
+    //TODO l'internal callback ci dessous doit géré la modification du state du PushOrder.
     private Pusher.Callback createInternalChainCallback(final Task task, final Pusher.Callback callback) {
         return new Pusher.Callback() {
             @Override
@@ -130,8 +153,28 @@ public final class PushExecutor {
     }
 
     private void executeNext() {
-        Task nextTask = pendingTasks.get(0);
-        execute(nextTask, createInternalChainCallback(nextTask, null));
+        final Task nextTask = pendingTasks.get(0);
+        execute(nextTask, createInternalChainCallback(nextTask, new Pusher.Callback() {
+            @Override
+            public void onSuccess(PushResult result) {
+
+            }
+
+            @Override
+            public void onError(PushError result) {
+
+            }
+
+            @Override
+            public void onFailed(Throwable error) {
+
+            }
+
+            @Override
+            public void onFinish(int state) {
+
+            }
+        }));
     }
 
     private Pusher getPusher(PushOrder order) {

@@ -1,27 +1,31 @@
 package com.qmaker.survey.core.engines;
 
 import com.qmaker.core.engines.QRunner;
-import com.qmaker.core.engines.Qmaker;
 import com.qmaker.core.entities.CopySheet;
 import com.qmaker.core.entities.Exercise;
 import com.qmaker.core.entities.Test;
 import com.qmaker.core.interfaces.RunnableDispatcher;
 import com.qmaker.core.io.QPackage;
-import com.qmaker.survey.core.entities.PushOrder;
 import com.qmaker.survey.core.entities.Survey;
+import com.qmaker.survey.core.interfaces.PersistenceUnit;
+import com.qmaker.survey.core.interfaces.PushProcess;
+import com.qmaker.survey.core.utils.MemoryPersistenceUnit;
 
 import java.util.ArrayList;
 //import java.util.HashMap;
 import java.util.List;
 
-public class QSurvey implements QRunner.StateListener {
+public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionStateChangeListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
-//    final HashMap<String, Pusher> pusherMap = new HashMap<>();
-    PersistenceUnit persistenceUnit;
+    //    final HashMap<String, Pusher> pusherMap = new HashMap<>();
+    PersistenceUnit persistenceUnit = new MemoryPersistenceUnit();
+    final PushExecutor pushExecutor = new PushExecutor();
 
     private QSurvey() {
         populatePusherMap();
+        pushExecutor.registerExecutionStateChangeListener(this);
+        pushExecutor.start();
     }
 
     private void populatePusherMap() {
@@ -33,6 +37,11 @@ public class QSurvey implements QRunner.StateListener {
 ////        pusherMap.put(supported, pusher);
 //        return this;
 //    }
+
+
+    public PushExecutor getPushExecutor() {
+        return pushExecutor;
+    }
 
     public static QSurvey getInstance() {
         if (instance == null) {
@@ -47,8 +56,8 @@ public class QSurvey implements QRunner.StateListener {
         QRunner.getInstance().registerStateListener(0, this);
     }
 
-    public QSurvey setPersistanceUnit(PersistenceUnit pUnit) {
-        this.persistenceUnit = persistenceUnit;
+    public QSurvey usePersistanceUnit(PersistenceUnit pUnit) {
+        this.persistenceUnit = pUnit;
         return this;
     }
 
@@ -188,15 +197,15 @@ public class QSurvey implements QRunner.StateListener {
         return defaultRunnableDispatcher;
     }
 
-    //TODO doit prevoir une method pour supprimé tous es ordre dja pushé.
-    public interface PersistenceUnit {
-
-        boolean persist(PushOrder order);
-
-        List<PushOrder> findAll();
-
-        boolean delete(PushOrder order);
-
+    @Override
+    public void onTaskStateChanged(PushExecutor.Task task) {
+        if (persistenceUnit != null) {
+            if (task.getState() == PushProcess.STATE_SUCCESS) {
+                persistenceUnit.delete(task.getOrder());
+            } else {
+                persistenceUnit.persist(task.getOrder());
+            }
+        }
     }
 
     public interface SurveyStateListener {
