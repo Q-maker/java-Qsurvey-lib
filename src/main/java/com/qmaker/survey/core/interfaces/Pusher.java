@@ -8,6 +8,8 @@ public interface Pusher {
 
     PushProcess push(PushOrder order, Pusher.Callback callback);
 
+    String getSupportedGrandType();
+
     interface Callback {
 
         void onSuccess(PushResult result);

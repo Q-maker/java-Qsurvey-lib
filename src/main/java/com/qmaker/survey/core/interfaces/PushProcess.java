@@ -1,16 +1,17 @@
 package com.qmaker.survey.core.interfaces;
 
 import com.qmaker.survey.core.engines.PushResponse;
+import com.qmaker.survey.core.entities.PushOrder;
 
 public interface PushProcess {
-    int STATE_SUCCESS = 0,
-            STATE_ERROR = 1,
-            STATE_FAILED = 2,
-            STATE_FINISHED = 3,
-            STATE_ABORTED = 4,
-            STATE_STARTING = 5,
-            STATE_RUNNING = 6,
-            STATE_PENDING = 7;
+    int STATE_SUCCESS = PushOrder.STATE_DONE,
+            STATE_ERROR = PushOrder.STATE_ERROR,
+            STATE_FAILED = PushOrder.STATE_FAILED,
+            STATE_FINISHED = PushOrder.STATE_FINISHED,
+            STATE_ABORTED = PushOrder.STATE_ABORTED,
+            STATE_STARTING = PushOrder.STATE_STARTING,
+            STATE_RUNNING = PushOrder.STATE_PROCESSING,
+            STATE_PENDING = PushOrder.STATE_PENDING;
 
     boolean cancel();
 

@@ -6,30 +6,29 @@ import com.qmaker.core.entities.Exercise;
 import com.qmaker.core.entities.Test;
 import com.qmaker.core.interfaces.RunnableDispatcher;
 import com.qmaker.core.io.QPackage;
+import com.qmaker.survey.core.entities.PushOrder;
 import com.qmaker.survey.core.entities.Survey;
 import com.qmaker.survey.core.interfaces.PersistenceUnit;
 import com.qmaker.survey.core.interfaces.PushProcess;
+import com.qmaker.survey.core.interfaces.Pusher;
 import com.qmaker.survey.core.utils.MemoryPersistenceUnit;
 
 import java.util.ArrayList;
-//import java.util.HashMap;
+import java.util.HashMap;
 import java.util.List;
+
+import istat.android.base.tools.TextUtils;
 
 public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionStateChangeListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
-    //    final HashMap<String, Pusher> pusherMap = new HashMap<>();
     PersistenceUnit persistenceUnit = new MemoryPersistenceUnit();
     final PushExecutor pushExecutor = new PushExecutor();
 
     private QSurvey() {
-        populatePusherMap();
         pushExecutor.registerExecutionStateChangeListener(this);
         pushExecutor.start();
-    }
-
-    private void populatePusherMap() {
-
+        resetDefaultPusher();
     }
 
 //    public QSurvey appendPusher(Pusher pusher) {
@@ -210,6 +209,40 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     public interface SurveyStateListener {
         void onSurveyCompleted(Survey survey, CopySheet copySheet);
+    }
+
+    final static HashMap<String, Pusher> pusherMap = new HashMap();
+
+    public static Pusher appendPusher(Pusher typeHandler) {
+        if (typeHandler == null || TextUtils.isEmpty(typeHandler.getSupportedGrandType())) {
+            return null;
+        }
+        return pusherMap.put(typeHandler.getSupportedGrandType(), typeHandler);
+    }
+
+    public static Pusher removePusher(String typeName) {
+        return pusherMap.remove(typeName);
+    }
+
+    static Pusher getPusher(String grandType) {
+        Pusher pusher = pusherMap.get(grandType);
+        return pusher;
+    }
+
+
+    public static Pusher getPusher(PushOrder order) {
+        if (order == null || order.getRepository() == null) {
+            return null;
+        }
+        return getPusher(order.getRepository().getGrandType());
+    }
+
+    //TODO ajouter des pusher par défaut a partir d'ici.
+    public static void resetDefaultPusher() {
+//        appendPusher(Pusher.DEFAULT);
+//        appendPusher(Pusher.PUT_IN_ORDER);
+//        appendPusher(Pusher.TYPE_MATCH_COLUMN);
+//        appendPusher(Pusher.FILL_IN_THE_BLANK);
     }
 
 }

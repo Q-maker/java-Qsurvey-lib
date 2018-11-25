@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PushOrder {
-    final static int STATE_PENDING = 0,
-            STATE_PROCESSING = 1,
-            STATE_CANCELED = 2,
-            STATE_FAILED = 3,
-            STATE_DONE = 4;
+    public final static int STATE_DONE = 0,
+            STATE_ERROR = 1,
+            STATE_FAILED = 2,
+            STATE_FINISHED = 3,
+            STATE_ABORTED = 4,
+            STATE_STARTING = 5,
+            STATE_PROCESSING = 6,
+            STATE_PENDING = 7;
     public final static String TAG = "pushOrder";
     String id;
     long createAt = System.currentTimeMillis();
@@ -57,6 +60,10 @@ public class PushOrder {
 
     public int getState() {
         return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 
     public CopySheet getCopySheet() {

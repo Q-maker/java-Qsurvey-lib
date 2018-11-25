@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+//TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
-    final List<Task> pendingTasks = new ArrayList();
-    final List<Task> processingTasks = new ArrayList();
+    final List<Task> pendingTasks = Collections.synchronizedList(new ArrayList<Task>());
+    final List<Task> processingTasks = Collections.synchronizedList(new ArrayList<Task>());
     final List<ExecutionStateChangeListener> listeners = Collections.synchronizedList(new ArrayList<ExecutionStateChangeListener>());
     boolean running = false, paused = false;
 
@@ -18,10 +19,12 @@ public final class PushExecutor {
 
     }
 
+    //TODO géré un start apres un pause
     public boolean start() {
-        if (running /*|| pendingTasks.isEmpty()*/) {
+        if (running && !paused /*|| pendingTasks.isEmpty()*/) {
             return false;
         }
+        this.paused = false;
         this.running = true;
         executeNext();
         return false;
@@ -32,11 +35,16 @@ public final class PushExecutor {
         return this.running;
     }
 
+    public boolean isStopped() {
+        return !running;
+    }
+
     public boolean isPaused() {
         return paused;
     }
 
     public int stop() {
+        this.running = false;
         int stoppedCount = 0;
         for (Task task : processingTasks) {
             if (task.cancel()) {
@@ -73,54 +81,54 @@ public final class PushExecutor {
         return enqueue(-1, order);
     }
 
+    //TODO reflechir, si on enqueue le meme ordre que ce passe t'il?
     public Task enqueue(int priority, PushOrder order) {
-        if (priority < 0 || priority >= pendingTasks.size()) {
-            priority = -1;
+        synchronized (pendingTasks) {
+            if (priority < 0 || priority >= pendingTasks.size()) {
+                priority = -1;
+            }
+            Task task = new Task(order);
+            if (priority >= 0) {
+                pendingTasks.add(priority, task);
+            } else {
+                pendingTasks.add(task);
+            }
+            return task;
         }
-        Task task = new Task(order);
-        if (priority >= 0) {
-            pendingTasks.add(priority, task);
-        } else {
-            pendingTasks.add(task);
-        }
-        return task;
     }
 
     private void execute(Task task, Pusher.Callback callback) {
-        Pusher pusher = getPusher(task.getOrder());
-        if (pusher == null && !pendingTasks.isEmpty()) {
-            executeNext();
+        synchronized (processingTasks) {
+            Pusher pusher = getPusher(task.getOrder());
+            processingTasks.add(task);
+            task.attachTo(pusher.push(task.getOrder(), createInternalChainCallback(task, callback)));
         }
-        processingTasks.add(task);
-        dispatchPushState(task);
-        task.attachTo(pusher.push(task.getOrder(), createPushChainCallback(callback)));
     }
 
-    //TODO l'internal callback ci dessous doit géré la modification du state du PushOrder.
     private Pusher.Callback createInternalChainCallback(final Task task, final Pusher.Callback callback) {
         return new Pusher.Callback() {
             @Override
             public void onSuccess(PushResult result) {
+                dispatchPushFinishState(task);
                 if (callback != null) {
                     callback.onSuccess(result);
                 }
-                dispatchPushState(task);
             }
 
             @Override
             public void onError(PushError result) {
+                dispatchPushFinishState(task);
                 if (callback != null) {
                     callback.onError(result);
                 }
-                dispatchPushState(task);
             }
 
             @Override
             public void onFailed(Throwable error) {
+                dispatchPushFinishState(task);
                 if (callback != null) {
                     callback.onFailed(error);
                 }
-                dispatchPushState(task);
             }
 
             @Override
@@ -132,7 +140,16 @@ public final class PushExecutor {
         };
     }
 
-    private void dispatchPushState(final Task task) {
+    private void dispatchPushFinishState(final Task task) {
+        if (task.getOrder() != null) {
+            task.getOrder().setState(task.getState());
+        }
+        synchronized (processingTasks) {
+            processingTasks.remove(task);
+        }
+        synchronized (pendingTasks) {
+            pendingTasks.remove(task);
+        }
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -148,11 +165,10 @@ public final class PushExecutor {
         QSurvey.getDefaultRunnableDispatcher().dispatch(runnable, 0);
     }
 
-    private Pusher.Callback createPushChainCallback(Pusher.Callback callback) {
-        return null;
-    }
-
-    private void executeNext() {
+    private boolean executeNext() {
+        if (pendingTasks.isEmpty()) {
+            return false;
+        }
         final Task nextTask = pendingTasks.get(0);
         execute(nextTask, createInternalChainCallback(nextTask, new Pusher.Callback() {
             @Override
@@ -172,14 +188,16 @@ public final class PushExecutor {
 
             @Override
             public void onFinish(int state) {
-
+                if (!pendingTasks.isEmpty()) {
+                    executeNext();
+                }
             }
         }));
+        return true;
     }
 
     private Pusher getPusher(PushOrder order) {
-        //TODO find the most suitable Pusher for this order.
-        return null;
+        return QSurvey.getPusher(order);
     }
 
     private ExecutionStateChangeListener[] collectListeners() {
