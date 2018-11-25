@@ -12,7 +12,7 @@ public class Survey {
     final static String TAG = "survey";
     Component component;
     public static String FIELD_TYPE = "type",
-            FIELD_AUTH_LIST = "repository",
+            FIELD_REPOSITORIES = "repositories",
             FIELD_DEFAULT_MESSAGE = "message";
 
     private Survey(Component component) {
@@ -38,7 +38,7 @@ public class Survey {
         if (repositories != null) {
             return repositories;
         }
-        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_AUTH_LIST, List.class));
+        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_REPOSITORIES, List.class));
         return repositories;
     }
 
