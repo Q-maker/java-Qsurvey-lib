@@ -28,7 +28,7 @@ public class Survey {
     public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
         Component component = ComponentManager.getInstance().fetch(qPackage).getComponent(NAMESPACE);
         if (component == null) {
-            throw new InvalidSurveyException();
+            throw new InvalidSurveyException(qPackage);
         }
         return new Survey(component);
     }
@@ -72,8 +72,8 @@ public class Survey {
             super(message);
         }
 
-        public InvalidSurveyException() {
-            super("This qpackage doesn't content any Survey component.");
+        public InvalidSurveyException(QPackage qPackage) {
+            super("This qpackage doesn't content any Survey component." + (qPackage != null ? " uri" + qPackage.getUriString() : ""));
         }
     }
 

@@ -76,10 +76,10 @@ public class PushOrder {
     }
 
     public static List<PushOrder> listFrom(Survey survey, CopySheet copySheet) throws InstantiationException, IllegalAccessException {
-        List<Repository> authList = survey.getRepositories();
+        List<Repository> repositories = survey.getRepositories();
         List<PushOrder> out = new ArrayList<>();
-        for (Repository auth : authList) {
-            out.add(new PushOrder(copySheet, auth));
+        for (Repository repo : repositories) {
+            out.add(new PushOrder(copySheet, repo));
         }
         return out;
     }

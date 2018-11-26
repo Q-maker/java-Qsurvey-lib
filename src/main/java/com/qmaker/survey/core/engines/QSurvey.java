@@ -97,13 +97,33 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             if (survey == null) {
                 return false;
             }
-            //TODO detecter si il sagit d'un Survey Aynchrone ou synchrone et empêcher l'exercise de prendre drat de la fin du Test.
-            //getPusher(survey).push(test.getCopySheet(), createPushCallback(survey, test.getCopySheet()));
+            publishCopySheet(survey, test);
             dispatchSurveyCompleted(survey, test);
         } catch (Survey.InvalidSurveyException e) {
+            e.printStackTrace();
             //Nothing to do, qpackake is not a survey.
         }
         return true;
+    }
+
+    private void publishCopySheet(Survey survey, Test test) {
+        try {
+            List<PushOrder> orders = PushOrder.listFrom(survey, test.getCopySheet());
+            if (!Survey.TYPE_SYNCHRONOUS.equals(survey.getType())) {
+                getPushExecutor().enqueue(orders);
+            } else {
+                showPushCautionUI(survey, orders);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showPushCautionUI(Survey survey, List<PushOrder> orders) {
+        //TODO écrire le nécessaire pour faire sortir une UI indépendante qui éffectuera les execution chainé.
+        /*
+            Le problème est que le core ne sait pas quel type de UI lancer.
+         */
     }
 
     private void dispatchSurveyCompleted(Survey survey, Test test) {
@@ -243,6 +263,11 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 //        appendPusher(Pusher.PUT_IN_ORDER);
 //        appendPusher(Pusher.TYPE_MATCH_COLUMN);
 //        appendPusher(Pusher.FILL_IN_THE_BLANK);
+    }
+
+    public static void resetPusher() {
+        pusherMap.clear();
+        resetDefaultPusher();
     }
 
 }
