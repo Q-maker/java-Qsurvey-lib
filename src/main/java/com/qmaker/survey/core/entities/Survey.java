@@ -43,7 +43,7 @@ public class Survey {
         if (repositories != null) {
             return repositories;
         }
-        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_REPOSITORIES, List.class));
+        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_REPOSITORIES, ArrayList.class));
         return repositories;
     }
 
