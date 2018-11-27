@@ -2,16 +2,21 @@ package com.devup.qcm.survey;
 
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
+import com.qmaker.core.engines.QSystem;
 import com.qmaker.core.engines.Qmaker;
 import com.qmaker.core.entities.Author;
+import com.qmaker.core.entities.Qcm;
 import com.qmaker.core.entities.Questionnaire;
+import com.qmaker.core.io.QPackage;
 import com.qmaker.core.io.QProject;
 import com.qmaker.core.utils.MockUps;
+import com.qmaker.core.utils.ZipFileIoInterface;
 import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -25,6 +30,29 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+
+    @Test
+    public void buildQSurveyTest() throws Exception {
+        String uri = "file:///home/istat/Temp/qsurvey/";
+        QProject project = Qmaker.exist(uri) ? Qmaker.edit(uri) : Qmaker.newProject(uri);
+        project.setQuestionnaire(MockUps.questionnaireAllType());
+        project.getConfig().setRandomEnable(false);
+        File backgroundAudioFile = new File("/home/istat/Temp/audio_qcm.mp3");
+        File audioPlayFile = new File("/home/istat/Temp/audio_qcm.m4a");
+        if (!backgroundAudioFile.exists()) {
+            assertTrue(false);
+            return;
+        }
+        project.getResEditor().set(QPackage.Resource.TYPE_SOUNDS, backgroundAudioFile);
+        String entryPath = project.getQcmResEditor(0).getQuestionResEditor().set(QPackage.Resource.TYPE_SOUNDS, audioPlayFile);
+        for (Qcm qcm : project.getQcmList()) {
+            qcm.getUriMap().setSoundUri(entryPath);
+        }
+        ZipFileIoInterface zipIoInterface = new ZipFileIoInterface();
+        QSystem zipSystem = new QSystem(zipIoInterface);
+        QPackage repackaged = zipSystem.repack(project);
+        zipSystem.save(repackaged, "file:///home/istat/Temp/qsurvey.qcm");
     }
 
     @Test

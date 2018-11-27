@@ -7,10 +7,9 @@ public interface PushProcess {
     int STATE_SUCCESS = PushOrder.STATE_DONE,
             STATE_ERROR = PushOrder.STATE_ERROR,
             STATE_FAILED = PushOrder.STATE_FAILED,
-            STATE_FINISHED = PushOrder.STATE_FINISHED,
             STATE_ABORTED = PushOrder.STATE_ABORTED,
             STATE_STARTING = PushOrder.STATE_STARTING,
-            STATE_RUNNING = PushOrder.STATE_PROCESSING,
+            STATE_PROCESSING = PushOrder.STATE_PROCESSING,
             STATE_PENDING = PushOrder.STATE_PENDING;
 
     boolean cancel();

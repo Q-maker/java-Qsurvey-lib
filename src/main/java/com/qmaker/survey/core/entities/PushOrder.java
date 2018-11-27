@@ -9,12 +9,13 @@ public class PushOrder {
     public final static int STATE_DONE = 0,
             STATE_ERROR = 1,
             STATE_FAILED = 2,
-            STATE_FINISHED = 3,
-            STATE_ABORTED = 4,
-            STATE_STARTING = 5,
-            STATE_PROCESSING = 6,
-            STATE_PENDING = 7,
-            STATE_LATENT = 8;
+            STATE_ABORTED = 3,
+            STATE_STARTING = 4,
+            STATE_PROCESSING = 5,
+            STATE_PENDING = 6,
+            STATE_LATENT = 7,
+            STATE_CAN_NOT_PROCEED = 8,
+            STATE_FINISHED = STATE_DONE | STATE_ERROR | STATE_FAILED | STATE_ABORTED;
     public final static String TAG = "pushOrder";
     String id;
     long createAt = System.currentTimeMillis();

@@ -7,6 +7,7 @@ import com.qmaker.core.entities.Test;
 import com.qmaker.core.interfaces.RunnableDispatcher;
 import com.qmaker.core.io.QPackage;
 import com.qmaker.survey.core.entities.PushOrder;
+import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 import com.qmaker.survey.core.interfaces.PersistenceUnit;
 import com.qmaker.survey.core.interfaces.PushProcess;
@@ -36,21 +37,43 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         return pushExecutor;
     }
 
+    public static QSurvey getInstance(boolean initializeIfNeeded) {
+        if (!initializeIfNeeded) {
+            return getInstance();
+        }
+        if (isInitialized()) {
+            return getInstance();
+        } else {
+            return initialize();
+        }
+    }
+
     public static QSurvey getInstance() {
         if (instance == null) {
-            instance = new QSurvey();
-            instance.init();
+            throw new IllegalStateException("AndroidQSurvey was not initialised.");
         }
+        return instance;
+    }
+
+    public static boolean isInitialized() {
+        return instance != null;
+    }
+
+    public static QSurvey initialize() {
+        if (instance != null) {
+            throw new IllegalStateException("AndroidQSurvey instance is already initialized and is ready do be get using getInstance");
+        }
+        instance = new QSurvey();
+        instance.init();
         return instance;
     }
 
 
     private void init() {
         QRunner.getInstance().registerStateListener(0, this);
-
     }
 
-    public QSurvey usePersistanceUnit(PersistenceUnit pUnit) {
+    public QSurvey usePersistenceUnit(PersistenceUnit pUnit) {
         this.persistenceUnit = pUnit;
         return this;
     }
@@ -97,22 +120,39 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             if (survey == null) {
                 return false;
             }
-            publishCopySheet(survey, test);
+            List<PushOrder> orders = handleSurveyResultAsPushOrder(survey, test.getCopySheet());
             dispatchSurveyCompleted(survey, test);
+            publishOrder(survey, orders);
         } catch (Survey.InvalidSurveyException e) {
             e.printStackTrace();
             //Nothing to do, qpackake is not a survey.
+        } catch (Exception e) {
+            e.printStackTrace();
+            //une exception innatentdu est survenu.
         }
         return true;
     }
 
-    private void publishCopySheet(Survey survey, Test test) {
+    private List<PushOrder> handleSurveyResultAsPushOrder(Survey survey, CopySheet copySheet) throws InstantiationException, IllegalAccessException {
+        List<Repository> repositories = survey.getRepositories();
+        List<PushOrder> out = new ArrayList<>();
+        PushOrder order;
+        for (Repository repo : repositories) {
+            order = new PushOrder(copySheet, repo);
+            out.add(order);
+            if (persistenceUnit != null) {
+                persistenceUnit.persist(order);
+            }
+        }
+        return out;
+    }
+
+    private void publishOrder(Survey survey, List<PushOrder> orders) {
         try {
-            List<PushOrder> orders = PushOrder.listFrom(survey, test.getCopySheet());
             if (!Survey.TYPE_SYNCHRONOUS.equals(survey.getType())) {
                 getPushExecutor().enqueue(orders);
             } else {
-                showPushCautionUI(survey, orders);
+                getPushExecutor().enqueue(0, orders);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,7 +290,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     }
 
 
-    public static Pusher getPusher(PushOrder order) {
+    static Pusher getPusher(PushOrder order) {
         if (order == null || order.getRepository() == null) {
             return null;
         }

@@ -7,6 +7,7 @@ import com.qmaker.survey.core.interfaces.Pusher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 //TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
@@ -123,6 +124,7 @@ public final class PushExecutor {
             synchronized (managedTaskIds) {
                 managedTaskIds.add(task.getId());
             }
+            dispatchTaskStateChanged(task);
             return task;
         }
     }
@@ -137,15 +139,27 @@ public final class PushExecutor {
         }
     }
 
-    private void execute(Task task, Pusher.Callback callback) {
-        Pusher pusher = getPusher(task.getOrder());
+    private boolean execute(Task task, Pusher.Callback callback) {
+        if (processingTasks.contains(task)) {
+            return false;
+        }
+        PushOrder order = task.getOrder();
+        order.setState(PushOrder.STATE_STARTING);
+        dispatchTaskStateChanged(task);
+        Pusher pusher = getPusher(order);
+        callback = createInternalChainCallback(task, callback);
+        if (pusher == null) {
+            task.notifyCanNotProceed();
+            callback.onFailed(new RuntimeException("No pusher found for given Order with id=" + task.getOrder().getId()));
+        }
         synchronized (processingTasks) {
             processingTasks.add(task);
         }
         synchronized (pendingTasks) {
             pendingTasks.add(task);
         }
-        task.attachTo(pusher.push(task.getOrder(), createInternalChainCallback(task, callback)));
+        task.attachTo(pusher.push(task.getOrder(), callback));
+        return true;
     }
 
     private Pusher.Callback createInternalChainCallback(final Task task, final Pusher.Callback callback) {
@@ -193,15 +207,36 @@ public final class PushExecutor {
         synchronized (managedTaskIds) {
             managedTaskIds.remove(task.getId());
         }
+        dispatchTaskStateChanged(task);
+    }
+
+
+    private void dispatchTaskStateChanged(final Task task) {
+        dispatchTaskStateChanged(task, new Callable<ExecutionStateChangeListener[]>() {
+            @Override
+            public ExecutionStateChangeListener[] call() {
+                return collectListeners();
+            }
+        });
+    }
+
+    private void dispatchTaskStateChanged(final Task task, final Callable<ExecutionStateChangeListener[]> listenerCallable) {
+        if (task == null) {
+            return;
+        }
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                ExecutionStateChangeListener[] listeners = collectListeners();
-                if (listeners == null) {
-                    return;
-                }
-                for (ExecutionStateChangeListener listener : listeners) {
-                    listener.onTaskStateChanged(task);
+                try {
+                    ExecutionStateChangeListener[] listeners = listenerCallable.call();
+                    if (listeners == null) {
+                        return;
+                    }
+                    for (ExecutionStateChangeListener listener : listeners) {
+                        listener.onTaskStateChanged(task);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -294,6 +329,55 @@ public final class PushExecutor {
         return tasks;
     }
 
+    public List<Task> enqueue(int priority, List<PushOrder> orders) {
+        List<Task> tasks = new ArrayList();
+        for (PushOrder order : orders) {
+            tasks.add(enqueue(priority, order));
+        }
+        return tasks;
+    }
+
+    public List<Task> enqueue(int priority, PushOrder... orders) {
+        List<Task> tasks = new ArrayList();
+        for (PushOrder order : orders) {
+            tasks.add(enqueue(priority, order));
+        }
+        return tasks;
+    }
+
+//    public void execute(List<PushOrder> orders, final ExecutionStateChangeListener listener) {
+//        final Callable<ExecutionStateChangeListener[]> listeners = new Callable<ExecutionStateChangeListener[]>() {
+//            @Override
+//            public ExecutionStateChangeListener[] call() {
+//                return new ExecutionStateChangeListener[]{listener};
+//            }
+//        };
+//        List<Task> tasks = enqueue(orders);
+//        for (final Task task : tasks) {
+//            execute(task, new Pusher.Callback() {
+//                @Override
+//                public void onSuccess(PushResult result) {
+//                    dispatchTaskStateChanged(task, listeners);
+//                }
+//
+//                @Override
+//                public void onError(PushError result) {
+//                    dispatchTaskStateChanged(task, listeners);
+//                }
+//
+//                @Override
+//                public void onFailed(Throwable error) {
+//                    dispatchTaskStateChanged(task, listeners);
+//                }
+//
+//                @Override
+//                public void onFinish(int state) {
+//
+//                }
+//            });
+//        }
+//    }
+
     public static class Task {
         PushOrder order;
         PushProcess process;
@@ -304,7 +388,10 @@ public final class PushExecutor {
         }
 
         public int getState() {
-            return process != null ? process.getState() : PushProcess.STATE_PENDING;
+            if (process != null) {
+                return process.getState();
+            }
+            return order.getState();
         }
 
         public PushOrder getOrder() {
@@ -349,6 +436,10 @@ public final class PushExecutor {
             if (process != null) {
                 order.setState(PushOrder.STATE_PROCESSING);
             }
+        }
+
+        public void notifyCanNotProceed() {
+            order.setState(PushOrder.STATE_CAN_NOT_PROCEED);
         }
     }
 
