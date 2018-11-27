@@ -87,7 +87,6 @@ public final class PushExecutor {
         return enqueue(-1, order);
     }
 
-    //TODO reflechir, si on enqueue le meme ordre que ce passe t'il?
     public Task enqueue(int priority, PushOrder order) {
         if (order == null) {
             return null;
@@ -107,6 +106,7 @@ public final class PushExecutor {
                 } else if (pendingTasks.contains(retrievedTask)) {
                     reorderList(pendingTasks, retrievedTask, priority);
                 }
+                autoExecuteIfNeeded();
                 return retrievedTask;
             }
 
@@ -125,7 +125,14 @@ public final class PushExecutor {
                 managedTaskIds.add(task.getId());
             }
             dispatchTaskStateChanged(task);
+            autoExecuteIfNeeded();
             return task;
+        }
+    }
+
+    private void autoExecuteIfNeeded() {
+        if (processingTasks.isEmpty() && isRunning()) {
+            executeNext();
         }
     }
 
