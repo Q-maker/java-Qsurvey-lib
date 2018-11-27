@@ -24,10 +24,12 @@ public class PushOrder {
     int state = STATE_LATENT;
     CopySheet copySheet;
     Repository repository;
+    String copySheetId;
 
     public PushOrder(CopySheet copySheet, Repository auth) {
         this.copySheet = copySheet;
         this.repository = auth;
+        this.copySheetId = copySheet.getId();
     }
 
     public void notifyModified() {

@@ -179,13 +179,12 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
      *
      * @return
      */
-    public List<PushOrder> executeLatentOrders() {
+    public List<PushExecutor.Task> sync() {
         if (persistenceUnit == null) {
             return new ArrayList();
         }
         List<PushOrder> orders = persistenceUnit.findAll();
-        getPushExecutor().enqueue(orders);
-        return orders;
+        return getPushExecutor().enqueue(orders);
     }
 
     @Override

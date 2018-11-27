@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-//TODO penser au réordonnement des Task dans la queu et aussi au fait d'ajouet un élément a ala queu qui existait déja.
 public final class PushExecutor {
     final List<String> managedTaskIds = Collections.synchronizedList(new ArrayList<String>());
     final List<Task> pendingTasks = Collections.synchronizedList(new ArrayList<Task>());
