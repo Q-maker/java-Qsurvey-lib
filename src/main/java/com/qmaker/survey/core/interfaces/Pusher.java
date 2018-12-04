@@ -6,7 +6,7 @@ import com.qmaker.survey.core.entities.PushOrder;
 
 public interface Pusher {
 
-    PushProcess push(PushOrder order, Pusher.Callback callback);
+    PushProcess push(PushOrder order, Pusher.Callback callback) throws Exception;
 
     String getSupportedGrandType();
 

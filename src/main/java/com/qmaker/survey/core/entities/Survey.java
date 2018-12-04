@@ -1,9 +1,12 @@
 package com.qmaker.survey.core.entities;
 
+import com.google.gson.reflect.TypeToken;
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
+import com.qmaker.core.entities.Author;
 import com.qmaker.core.io.QPackage;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,11 +42,14 @@ public class Survey {
 
     List<Repository> repositories;
 
-    public List<Repository> getRepositories() throws IllegalAccessException, InstantiationException {
+    public List<Repository> getRepositories() {
         if (repositories != null) {
             return repositories;
         }
-        repositories = Collections.unmodifiableList(component.getSummaryProperties(FIELD_REPOSITORIES, ArrayList.class));
+        Type listType = new TypeToken<ArrayList<Repository>>() {
+        }.getType();
+        List<Repository> repositories = component.getSummaryPropertyArray(FIELD_REPOSITORIES, listType);
+        this.repositories = Collections.unmodifiableList(repositories);
         return repositories;
     }
 

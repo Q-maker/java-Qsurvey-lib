@@ -123,6 +123,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             List<PushOrder> orders = handleSurveyResultAsPushOrder(survey, test.getCopySheet());
             dispatchSurveyCompleted(survey, test);
             publishOrder(survey, orders);
+            return true;
         } catch (Survey.InvalidSurveyException e) {
             e.printStackTrace();
             //Nothing to do, qpackake is not a survey.
@@ -130,10 +131,10 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             e.printStackTrace();
             //une exception innatentdu est survenu.
         }
-        return true;
+        return false;
     }
 
-    private List<PushOrder> handleSurveyResultAsPushOrder(Survey survey, CopySheet copySheet) throws InstantiationException, IllegalAccessException {
+    private List<PushOrder> handleSurveyResultAsPushOrder(Survey survey, CopySheet copySheet) {
         List<Repository> repositories = survey.getRepositories();
         List<PushOrder> out = new ArrayList<>();
         PushOrder order;
@@ -179,7 +180,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
      *
      * @return
      */
-    public List<PushExecutor.Task> sync() {
+    public List<PushExecutor.Task> syncCopySheet() {
         if (persistenceUnit == null) {
             return new ArrayList();
         }

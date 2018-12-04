@@ -59,8 +59,9 @@ public class ExampleUnitTest {
     public void testApplySurveyComponentAndSave() throws Exception {
         final String defaultMessage = "Votre feuille de copie a été envoyé avec success";
         final String processingMessage = "Patientez svp...";
-        String fileUri = "file:///home/istat/Temp/qsurvey/";
+        String fileUri = "file:///home/istat/Temp/qsurvey-test/";
         QProject project = Qmaker.edit(fileUri);
+        project.setQuestionnaire(MockUps.questionnaireAllType());
         ComponentManager manager = ComponentManager.getInstance();
         Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
         builder.setType(Survey.TYPE_ANONYMOUS)
@@ -77,6 +78,16 @@ public class ExampleUnitTest {
         assertEquals(survey.getProcessingMessage(), processingMessage);
         List<Repository> repositories = survey.getRepositories();
         assertTrue(!repositories.isEmpty());
+        buildProjectTest(project);
+    }
+
+    @Test
+    public void readRepositoryFromSurveyTest() throws Exception {
+        String fileUri = "file:///home/istat/Temp/qsurvey-test/";
+        QProject project = Qmaker.edit(fileUri);
+        Survey survey = Survey.from(project);
+        List<Repository> repositories = survey.getRepositories();
+        assertTrue(!repositories.isEmpty());
     }
 
     private Repository mockUpRepository() {
@@ -90,5 +101,12 @@ public class ExampleUnitTest {
         repository.putIdentity("username", "toukea" + id);
         repository.putIdentity("password", "istatyouth" + id);
         return repository;
+    }
+
+    public void buildProjectTest(QPackage project) throws Exception {
+        ZipFileIoInterface zipIoInterface = new ZipFileIoInterface();
+        QSystem zipSystem = new QSystem(zipIoInterface);
+        QPackage repackaged = zipSystem.repack(project);
+        zipSystem.save(repackaged, "file:///home/istat/Temp/qsurvey-test.qcm");
     }
 }

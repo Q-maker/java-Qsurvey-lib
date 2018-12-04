@@ -12,6 +12,8 @@ public interface PushProcess {
             STATE_PROCESSING = PushOrder.STATE_PROCESSING,
             STATE_PENDING = PushOrder.STATE_PENDING;
 
+    boolean onProceed(PushOrder order, Pusher.Callback callback);
+
     boolean cancel();
 
     int getState();
@@ -19,4 +21,10 @@ public interface PushProcess {
     PushResponse getResponse();
 
     Throwable getFailCause();
+
+    class AbortionException extends Exception {
+        public AbortionException() {
+            super("Process aborted");
+        }
+    }
 }

@@ -76,6 +76,22 @@ public final class PushExecutor {
         return processingTasks;
     }
 
+    public Task getPendingTask(int index) {
+        return pendingTasks.get(index);
+    }
+
+    public Task getProcessingTask(int index) {
+        return processingTasks.get(index);
+    }
+
+    public int getPendingTaskCount() {
+        return pendingTasks.size();
+    }
+
+    public int getProcessingTaskCount() {
+        return processingTasks.size();
+    }
+
     public List<Task> getManagedTasks() {
         List<Task> tasks = new ArrayList<>(processingTasks);
         tasks.addAll(pendingTasks);
@@ -130,8 +146,10 @@ public final class PushExecutor {
     }
 
     private void autoExecuteIfNeeded() {
-        if (processingTasks.isEmpty() && isRunning()) {
-            executeNext();
+        if (processingTasks.isEmpty()) {
+            if (isRunning()) {
+                executeNext();
+            }
         }
     }
 
@@ -164,8 +182,13 @@ public final class PushExecutor {
         synchronized (pendingTasks) {
             pendingTasks.add(task);
         }
-        task.attachTo(pusher.push(task.getOrder(), callback));
-        return true;
+        try {
+            task.attachTo(pusher.push(task.getOrder(), callback));
+            return true;
+        } catch (Exception e) {
+            task.notifyCanNotProceed();
+            return false;
+        }
     }
 
     private Pusher.Callback createInternalChainCallback(final Task task, final Pusher.Callback callback) {
@@ -196,6 +219,9 @@ public final class PushExecutor {
 
             @Override
             public void onFinish(int state) {
+                pendingTasks.remove(task);
+                processingTasks.remove(task);
+                managedTaskIds.remove(task.getId());
                 if (callback != null) {
                     callback.onFinish(state);
                 }

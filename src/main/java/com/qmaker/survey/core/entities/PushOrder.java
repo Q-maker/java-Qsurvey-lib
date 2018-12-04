@@ -1,9 +1,13 @@
 package com.qmaker.survey.core.entities;
 
+import com.google.gson.Gson;
 import com.qmaker.core.entities.CopySheet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import static com.qmaker.core.utils.ToolKits.generateID;
 
 public class PushOrder {
     public final static int STATE_DONE = 0,
@@ -30,6 +34,7 @@ public class PushOrder {
         this.copySheet = copySheet;
         this.repository = auth;
         this.copySheetId = copySheet.getId();
+        this.id = UUID.randomUUID().toString();
     }
 
     public void notifyModified() {
@@ -78,12 +83,18 @@ public class PushOrder {
         return repository;
     }
 
-    public static List<PushOrder> listFrom(Survey survey, CopySheet copySheet) throws InstantiationException, IllegalAccessException {
+    public static List<PushOrder> listFrom(Survey survey, CopySheet copySheet) {
         List<Repository> repositories = survey.getRepositories();
         List<PushOrder> out = new ArrayList<>();
         for (Repository repo : repositories) {
             out.add(new PushOrder(copySheet, repo));
         }
         return out;
+    }
+
+    @Override
+    public String toString() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 }
