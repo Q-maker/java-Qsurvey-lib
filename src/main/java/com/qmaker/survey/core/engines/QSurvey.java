@@ -120,9 +120,9 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             if (survey == null) {
                 return false;
             }
-            CopySheet copySheet = test.getCopySheet();
-            dispatchSurveyCompleted(survey, test, copySheet);
-            List<PushOrder> orders = handleSurveyResultAsPushOrder(survey, copySheet);
+            Survey.Result result = survey.getResult(test);
+            dispatchSurveyCompleted(result);
+            List<PushOrder> orders = handleSurveyResultAsPushOrder(result);
             publishOrder(survey, orders);
             return Survey.TYPE_SYNCHRONOUS.equals(survey.getType());
         } catch (Survey.InvalidSurveyException e) {
@@ -135,12 +135,12 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         return false;
     }
 
-    private List<PushOrder> handleSurveyResultAsPushOrder(Survey survey, CopySheet copySheet) {
-        List<Repository> repositories = survey.getRepositories();
+    private List<PushOrder> handleSurveyResultAsPushOrder(Survey.Result result) {
+        List<Repository> repositories = result.getOrigin().getRepositories();
         List<PushOrder> out = new ArrayList<>();
         PushOrder order;
         for (Repository repo : repositories) {
-            order = new PushOrder(copySheet, repo);
+            order = new PushOrder(result.getCopySheet(), repo);
             out.add(order);
             if (persistenceUnit != null) {
                 persistenceUnit.persist(order);
@@ -168,10 +168,10 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
          */
     }
 
-    private void dispatchSurveyCompleted(Survey survey, Test test, CopySheet copySheet) {
+    private void dispatchSurveyCompleted(Survey.Result result) {
         synchronized (listeners) {
             for (SurveyStateListener listener : listeners) {
-                listener.onSurveyCompleted(survey, test, copySheet);
+                listener.onSurveyCompleted(result);
             }
         }
     }
@@ -282,7 +282,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 //    }
 
     public interface SurveyStateListener {
-        void onSurveyCompleted(Survey survey, Test test, CopySheet copySheet);
+        void onSurveyCompleted(Survey.Result result);
     }
 
     final static HashMap<String, Pusher> pusherMap = new HashMap();
