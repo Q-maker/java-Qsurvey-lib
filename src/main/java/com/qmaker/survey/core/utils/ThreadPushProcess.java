@@ -29,6 +29,7 @@ public abstract class ThreadPushProcess implements PushProcess, Runnable {
     @Override
     public final void run() {
         try {
+            state = PushProcess.STATE_PROCESSING;
             run(order);
         } catch (Exception e) {
             notifyFailed(e);
@@ -103,8 +104,8 @@ public abstract class ThreadPushProcess implements PushProcess, Runnable {
 
     @Override
     public int getState() {
-        if (!thread.isAlive()) {
-            return PushProcess.STATE_PENDING;
+        if (thread.isAlive()) {
+            return PushProcess.STATE_PROCESSING;
         }
         return state;
     }

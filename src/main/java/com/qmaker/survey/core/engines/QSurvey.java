@@ -120,10 +120,11 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             if (survey == null) {
                 return false;
             }
-            List<PushOrder> orders = handleSurveyResultAsPushOrder(survey, test.getCopySheet());
-            dispatchSurveyCompleted(survey, test);
+            CopySheet copySheet = test.getCopySheet();
+            dispatchSurveyCompleted(survey, test, copySheet);
+            List<PushOrder> orders = handleSurveyResultAsPushOrder(survey, copySheet);
             publishOrder(survey, orders);
-            return true;
+            return Survey.TYPE_SYNCHRONOUS.equals(survey.getType());
         } catch (Survey.InvalidSurveyException e) {
             e.printStackTrace();
             //Nothing to do, qpackake is not a survey.
@@ -167,10 +168,10 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
          */
     }
 
-    private void dispatchSurveyCompleted(Survey survey, Test test) {
+    private void dispatchSurveyCompleted(Survey survey, Test test, CopySheet copySheet) {
         synchronized (listeners) {
             for (SurveyStateListener listener : listeners) {
-                listener.onSurveyCompleted(survey, test.getCopySheet());
+                listener.onSurveyCompleted(survey, test, copySheet);
             }
         }
     }
@@ -180,7 +181,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
      *
      * @return
      */
-    public List<PushExecutor.Task> syncCopySheet() {
+    public List<PushExecutor.Task> syncResults() {
         if (persistenceUnit == null) {
             return new ArrayList();
         }
@@ -258,7 +259,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     @Override
     public void onTaskStateChanged(PushExecutor.Task task) {
-        if (persistenceUnit != null) {
+        if (persistenceUnit != null && task != null && task.isTerminated()) {
             if (task.getState() == PushProcess.STATE_SUCCESS) {
                 persistenceUnit.delete(task.getOrder());
             } else {
@@ -267,8 +268,21 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         }
     }
 
+//    public void onTaskStateChanged(PushExecutor.Task task) {
+//        if (persistenceUnit != null) {
+//            int state = task.getState();
+//            if (state == PushProcess.STATE_SUCCESS) {
+//                persistenceUnit.delete(task.getOrder());
+//            } else if (state != PushProcess.STATE_PROCESSING &&
+//                    state != PushProcess.STATE_PENDING &&
+//                    state != PushProcess.STATE_STARTING) {
+//                persistenceUnit.persist(task.getOrder());
+//            }
+//        }
+//    }
+
     public interface SurveyStateListener {
-        void onSurveyCompleted(Survey survey, CopySheet copySheet);
+        void onSurveyCompleted(Survey survey, Test test, CopySheet copySheet);
     }
 
     final static HashMap<String, Pusher> pusherMap = new HashMap();

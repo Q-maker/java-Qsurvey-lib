@@ -8,14 +8,14 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 public class Repository implements JSONable {
-    public final static String GRAND_TYPE_WSSE = "wsse";
-    public final static String GRAND_TYPE_FIREBASE = "firebase";
+    public final static String GRAND_TYPE_WSSE = "wsse", GRAND_TYPE_JWT = "jwt";
     public final static String GRAND_TYPE_FTP = "ftp";
     public final static String GRAND_TYPE_HTTP_BASIC = "http_basic";
     public final static String GRAND_TYPE_REFRESH_TOKEN = "refresh_token";
     public final static String IDENTITY_USER_NAME = "username";
     public final static String IDENTITY_PASSWORD = "password";
     public final static String IDENTITY_TOKEN_ID = "id";
+    public static final String GRAND_TYPE_HTTP_DIGEST = "http_digest";
     String uri;
     String grandType;
     HashMap<String, String> identity = new HashMap<>();

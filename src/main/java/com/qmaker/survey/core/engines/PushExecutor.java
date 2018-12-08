@@ -426,6 +426,15 @@ public final class PushExecutor {
             return order.getState();
         }
 
+        public boolean isTerminated() {
+            int state = getState();
+            return process != null &&
+                    (state == PushProcess.STATE_SUCCESS ||
+                            state == PushProcess.STATE_FAILED ||
+                            state == PushProcess.STATE_ERROR ||
+                            state == PushProcess.STATE_ABORTED);
+        }
+
         public PushOrder getOrder() {
             return order;
         }

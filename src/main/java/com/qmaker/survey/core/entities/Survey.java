@@ -4,6 +4,8 @@ import com.google.gson.reflect.TypeToken;
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.entities.Author;
+import com.qmaker.core.entities.CopySheet;
+import com.qmaker.core.entities.Test;
 import com.qmaker.core.io.QPackage;
 
 import java.lang.reflect.Type;
@@ -131,6 +133,37 @@ public class Survey {
             definition.setSummaryProperties(FIELD_PROCESSING_MESSAGE, processingMassage);
             definition.setSummaryProperties(FIELD_REPOSITORIES, repositories);
             return definition;
+        }
+    }
+
+    public Result getResult(Test test) {
+        if (test == null) {
+            return null;
+        }
+        return new Result(test);
+    }
+
+    public class Result {
+        Test test;
+        CopySheet copySheet;
+
+        public Result(Test test) {
+            this.test = test;
+        }
+
+        public CopySheet getCopySheet() {
+            if (copySheet == null) {
+                copySheet = test.getCopySheet();
+            }
+            return copySheet;
+        }
+
+        public Test getTest() {
+            return Test.copy(test);
+        }
+
+        public Survey getOrigin() {
+            return Survey.this;
         }
     }
 
