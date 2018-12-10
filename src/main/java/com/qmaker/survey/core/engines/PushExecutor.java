@@ -272,7 +272,7 @@ public final class PushExecutor {
                 }
             }
         };
-        QSurvey.getDefaultRunnableDispatcher().dispatch(runnable, 0);
+        QSurvey.getRunnableDispatcher().dispatch(runnable, 0);
     }
 
     private boolean executeNext() {

@@ -60,6 +60,7 @@ public class Survey {
     }
 
     public Repository getRepository(int index) {
+        List<Repository> repositories = getRepositories();
         return repositories != null && repositories.size() < index ? repositories.get(index) : null;
     }
 
@@ -144,11 +145,13 @@ public class Survey {
     }
 
     public class Result {
-        Test test;
+        final Test test;
+        final int state;
         CopySheet copySheet;
 
         public Result(Test test) {
             this.test = test;
+            this.state = test.state;
         }
 
         public CopySheet getCopySheet() {
@@ -156,6 +159,10 @@ public class Survey {
                 copySheet = test.getCopySheet();
             }
             return copySheet;
+        }
+
+        public int getState() {
+            return state;
         }
 
         public Test getTest() {

@@ -19,6 +19,10 @@ public class FileIoPusher implements Pusher {
     public final static String ACCEPTED_GRAND_TYPE = "file";
     File rootDir;
 
+    public FileIoPusher() throws IOException {
+        this.rootDir = File.createTempFile("file", "tmp").getParentFile();
+    }
+
     public FileIoPusher(File rootDir) {
         this.rootDir = rootDir;
     }

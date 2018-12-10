@@ -13,7 +13,14 @@ import com.qmaker.survey.core.interfaces.PushProcess;
 import com.qmaker.survey.core.interfaces.Pusher;
 import com.qmaker.survey.core.utils.MemoryPersistenceUnit;
 import com.qmaker.survey.core.utils.PayLoad;
+import com.qmaker.survey.core.utils.pushers.FileIoPusher;
+import com.qmaker.survey.core.utils.pushers.HttpBasicPusher;
+import com.qmaker.survey.core.utils.pushers.HttpDigestPusher;
+import com.qmaker.survey.core.utils.pushers.JwtPusher;
+import com.qmaker.survey.core.utils.pushers.MemoryPusher;
+import com.qmaker.survey.core.utils.pushers.WssePusher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +112,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     @Override
     public boolean onStartRunning(QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_PREPARED, runningSurvey, test);
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_STARTED, runningSurvey, test);
         }
         return false;
     }
@@ -113,7 +120,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     @Override
     public boolean onRunnerTimeTick(QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_PREPARED, runningSurvey, test);
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_TIME_TICK, runningSurvey, test);
         }
         return false;
     }
@@ -121,7 +128,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     @Override
     public boolean onRunningExerciseChanged(QPackage qPackage, Test test, Exercise exercise, int exerciseIndex) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_PREPARED, runningSurvey, test, exercise, exerciseIndex);
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_EXERCISE_CHANGED, runningSurvey, test, exercise, exerciseIndex);
         }
         return false;
     }
@@ -129,7 +136,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     @Override
     public boolean onRunningTimeOut(QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_PREPARED, runningSurvey, test);
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_TIME_OUT, runningSurvey, test);
         }
         return false;
     }
@@ -137,7 +144,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     @Override
     public boolean onRunCanceled(QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_PREPARED, runningSurvey, test);
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_CANCELED, runningSurvey, test);
         }
         return false;
     }
@@ -180,22 +187,21 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         }
     }
 
-    private void showPushCautionUI(Survey survey, List<PushOrder> orders) {
-        //TODO écrire le nécessaire pour faire sortir une UI indépendante qui éffectuera les execution chainé.
-        /*
-            Le problème est que le core ne sait pas quel type de UI lancer.
-         */
-    }
-
-    private void dispatchSurveyStateChanged(int state, Survey survey, Object... vars) {
-        PayLoad payLoad = new PayLoad(vars);
-        synchronized (listeners) {
-            for (SurveyStateListener listener : listeners) {
-                if (listener != null) {
-                    listener.onSurveyStateChanged(state, survey, payLoad);
+    private void dispatchSurveyStateChanged(final int state, final Survey survey, final Object... vars) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                PayLoad payLoad = new PayLoad(vars);
+                synchronized (listeners) {
+                    for (SurveyStateListener listener : listeners) {
+                        if (listener != null) {
+                            listener.onSurveyStateChanged(state, survey, payLoad);
+                        }
+                    }
                 }
             }
-        }
+        };
+        runnableDispatcher.dispatch(runnable, 0);
     }
 
     /**
@@ -234,7 +240,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
         return true;
     }
 
-    public boolean unregisterRunStateListener(SurveyStateListener listener) {
+    public boolean unregisterSurveyStateListener(SurveyStateListener listener) {
         synchronized (listeners) {
             if (listeners.contains(listener)) {
                 return false;
@@ -269,23 +275,25 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
         }
     };
-    static RunnableDispatcher defaultRunnableDispatcher = DEFAULT_RUNNABLE_DISPATCHER;
+    static RunnableDispatcher runnableDispatcher = DEFAULT_RUNNABLE_DISPATCHER;
 
-    public static void setDefaultRunnableDispatcher(RunnableDispatcher defaultRunnableDispatcher) {
-        QSurvey.defaultRunnableDispatcher = defaultRunnableDispatcher != null ? defaultRunnableDispatcher : DEFAULT_RUNNABLE_DISPATCHER;
+    public static void setRunnableDispatcher(RunnableDispatcher runnableDispatcher) {
+        QSurvey.runnableDispatcher = runnableDispatcher != null ? runnableDispatcher : DEFAULT_RUNNABLE_DISPATCHER;
     }
 
-    public static RunnableDispatcher getDefaultRunnableDispatcher() {
-        return defaultRunnableDispatcher;
+    public static RunnableDispatcher getRunnableDispatcher() {
+        return runnableDispatcher;
     }
 
     @Override
     public void onTaskStateChanged(PushExecutor.Task task) {
-        if (persistenceUnit != null && task != null && task.isTerminated()) {
-            if (task.getState() == PushProcess.STATE_SUCCESS) {
-                persistenceUnit.delete(task.getOrder());
-            } else {
-                persistenceUnit.persist(task.getOrder());
+        if (task.isTerminated()) {
+            if (persistenceUnit != null && task != null) {
+                if (task.getState() == PushProcess.STATE_SUCCESS) {
+                    persistenceUnit.delete(task.getOrder());
+                } else {
+                    persistenceUnit.persist(task.getOrder());
+                }
             }
         }
     }
@@ -312,30 +320,17 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
                 STATE_CANCELED = 5,
                 STATE_RESET = 6,
                 STATE_FINISH = 7;
-//        boolean onSurveyPrepared(Survey survey);
-//
-//        void onSurveyStarted(Survey survey, Test test);
-//
-//        void onSurveyTimeTick(Survey survey, Test test);
-//
-//        void onSurveyExerciseChanged(Survey survey, Test test, Exercise exercise, int exerciseIndex);
-//
-//        void onSurveyTimeOut(Survey survey, Test test);
-//
-//        void onSurveyCanceled(Survey survey, Test test);
-//
-//        void onSurveyReset(Survey survey, Test test);
 
         void onSurveyStateChanged(int state, Survey survey, PayLoad payLoad);
     }
 
     final static HashMap<String, Pusher> pusherMap = new HashMap();
 
-    public static Pusher appendPusher(Pusher typeHandler) {
-        if (typeHandler == null || TextUtils.isEmpty(typeHandler.getSupportedGrandType())) {
+    public static Pusher appendPusher(Pusher pusher) {
+        if (pusher == null || TextUtils.isEmpty(pusher.getSupportedGrandType())) {
             return null;
         }
-        return pusherMap.put(typeHandler.getSupportedGrandType(), typeHandler);
+        return pusherMap.put(pusher.getSupportedGrandType(), pusher);
     }
 
     public static Pusher removePusher(String typeName) {
@@ -357,10 +352,16 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     //TODO ajouter des pusher par défaut a partir d'ici.
     public static void resetDefaultPusher() {
-//        appendPusher(Pusher.DEFAULT);
-//        appendPusher(Pusher.PUT_IN_ORDER);
-//        appendPusher(Pusher.TYPE_MATCH_COLUMN);
-//        appendPusher(Pusher.FILL_IN_THE_BLANK);
+        appendPusher(new HttpBasicPusher());
+        appendPusher(new JwtPusher());
+        appendPusher(new HttpDigestPusher());
+        appendPusher(new MemoryPusher());
+        appendPusher(new WssePusher());
+        try {
+            appendPusher(new FileIoPusher());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void resetPusher() {
