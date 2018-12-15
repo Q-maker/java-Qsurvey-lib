@@ -1,11 +1,11 @@
-package com.qmaker.survey.core.utils.pushers;
+package com.qmaker.survey.core.pushers;
 
 import com.qmaker.survey.core.entities.PushOrder;
+import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.interfaces.PushProcess;
 import com.qmaker.survey.core.interfaces.Pusher;
 
-public class MemoryPusher implements Pusher {
-    public final static String ACCEPTED_GRAND_TYPE = "memory";
+public class JwtPusher implements Pusher {
 
     @Override
     public PushProcess push(PushOrder order, Callback callback) {
@@ -14,6 +14,6 @@ public class MemoryPusher implements Pusher {
 
     @Override
     public String getSupportedGrandType() {
-        return ACCEPTED_GRAND_TYPE;
+        return Repository.GRAND_TYPE_JWT;
     }
 }

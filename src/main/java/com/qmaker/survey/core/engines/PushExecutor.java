@@ -168,12 +168,13 @@ public final class PushExecutor {
             return false;
         }
         PushOrder order = task.getOrder();
-        order.setState(PushOrder.STATE_STARTING);
+        order.setState(PushOrder.STATE_STARTED);
         dispatchTaskStateChanged(task);
         Pusher pusher = getPusher(order);
         callback = createInternalChainCallback(task, callback);
         if (pusher == null) {
             task.notifyCanNotProceed();
+            //TODO doit t'on vraiment prendre en cas les Failed.
             callback.onFailed(new RuntimeException("No pusher found for given Order with id=" + task.getOrder().getId()));
         }
         synchronized (processingTasks) {
@@ -480,7 +481,7 @@ public final class PushExecutor {
         }
 
         public void notifyCanNotProceed() {
-            order.setState(PushOrder.STATE_CAN_NOT_PROCEED);
+            order.setState(PushOrder.STATE_DROPPED);
         }
     }
 

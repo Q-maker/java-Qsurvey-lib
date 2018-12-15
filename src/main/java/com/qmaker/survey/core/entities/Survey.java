@@ -5,13 +5,19 @@ import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.entities.Author;
 import com.qmaker.core.entities.CopySheet;
+import com.qmaker.core.entities.QSummary;
+import com.qmaker.core.entities.Questionnaire;
 import com.qmaker.core.entities.Test;
 import com.qmaker.core.io.QPackage;
+import com.qmaker.core.utils.ToolKits;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import istat.android.base.tools.TextUtils;
 
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
 public class Survey {
@@ -21,7 +27,9 @@ public class Survey {
             TYPE_SYNCHRONOUS = "synchronous";
     final static String NAMESPACE = "survey";
     Component component;
-    public static String FIELD_TYPE = "type",
+    public static String
+            FIELD_ID = "id",
+            FIELD_TYPE = "type",
             FIELD_REPOSITORIES = "repositories",
             FIELD_DEFAULT_COMPLETION_MESSAGE = "default_completion_message",
             FIELD_PROCESSING_MESSAGE = "processing_message";
@@ -42,6 +50,18 @@ public class Survey {
         return component.getQPackage();
     }
 
+    public QSummary getQuestionnaireSummary() {
+        return getQPackage().getSummary();
+    }
+
+    public QSummary.Config getQuestionnaireConfig() {
+        return getQPackage().getSummary().getConfig();
+    }
+
+    public Questionnaire getQuestionaire() throws IOException {
+        return getQPackage().getQuestionnaire();
+    }
+
     List<Repository> repositories;
 
     public List<Repository> getRepositories() {
@@ -57,6 +77,18 @@ public class Survey {
 
     public String getType() {
         return component.getSummaryStringProperty(FIELD_TYPE);
+    }
+
+    public String getId() {
+        try {
+            String id = component.getSummaryStringProperty(FIELD_ID);
+            if (TextUtils.isEmpty(id)) {
+                id = component.getQPackage().getSummary().getId();
+            }
+            return "[" + ToolKits.generateID() + "]" + id;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Repository getRepository(int index) {
@@ -87,9 +119,15 @@ public class Survey {
     }
 
     public static class DefinitionBuilder {
-        String type;
+        String type, id;
         final List<Repository> repositories = new ArrayList<>();
         String processingMassage, defaultCompletionMessage;
+
+
+        public DefinitionBuilder setId(String id) {
+            this.id = id;
+            return this;
+        }
 
         public DefinitionBuilder setType(String type) {
             this.type = type;
@@ -129,6 +167,7 @@ public class Survey {
 
         public Component.Definition create() {
             Component.Definition definition = new Component.Definition(Survey.NAMESPACE);
+            definition.setSummaryProperties(FIELD_ID, id);
             definition.setSummaryProperties(FIELD_TYPE, type);
             definition.setSummaryProperties(FIELD_DEFAULT_COMPLETION_MESSAGE, defaultCompletionMessage);
             definition.setSummaryProperties(FIELD_PROCESSING_MESSAGE, processingMassage);

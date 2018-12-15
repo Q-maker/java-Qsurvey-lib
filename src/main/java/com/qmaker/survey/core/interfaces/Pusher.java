@@ -16,6 +16,7 @@ public interface Pusher {
 
         void onError(PushError result);
 
+        //TODO doit t'on vraiment prendre en cas les Failed.
         void onFailed(Throwable error);
 
         void onFinish(int state);

@@ -10,16 +10,17 @@ import java.util.UUID;
 import static com.qmaker.core.utils.ToolKits.generateID;
 
 public class PushOrder {
-    public final static int STATE_DONE = 0,
-            STATE_ERROR = 1,
-            STATE_FAILED = 2,
-            STATE_ABORTED = 3,
-            STATE_STARTING = 4,
-            STATE_PROCESSING = 5,
-            STATE_PENDING = 6,
-            STATE_LATENT = 7,
-            STATE_CAN_NOT_PROCEED = 8,
-            STATE_FINISHED = STATE_DONE | STATE_ERROR | STATE_FAILED | STATE_ABORTED;
+    public final static int
+            STATE_LATENT = -1,
+            STATE_STARTED = 7,
+            STATE_PROCESSING = 31,
+            STATE_SUCCESS = 255,
+            STATE_ERROR = 127,
+            STATE_FAILED = 111,
+            STATE_ABORTED = 95,
+            STATE_PENDING = 15,
+            STATE_DROPPED = 1,
+            STATE_FLAG_FINISHED = 65;
     public final static String TAG = "pushOrder";
     String id;
     long createAt = System.currentTimeMillis();
@@ -43,7 +44,7 @@ public class PushOrder {
 
     public void notifyDone() {
         this.doneAt = System.currentTimeMillis();
-        this.state = STATE_DONE;
+        this.state = STATE_SUCCESS;
         notifyModified();
     }
 
@@ -64,7 +65,7 @@ public class PushOrder {
     }
 
     public boolean isDone() {
-        return state == STATE_DONE;
+        return state == STATE_SUCCESS;
     }
 
     public int getState() {

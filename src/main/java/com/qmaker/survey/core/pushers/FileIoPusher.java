@@ -1,4 +1,4 @@
-package com.qmaker.survey.core.utils.pushers;
+package com.qmaker.survey.core.pushers;
 
 import com.qmaker.survey.core.engines.PushResult;
 import com.qmaker.survey.core.entities.PushOrder;
