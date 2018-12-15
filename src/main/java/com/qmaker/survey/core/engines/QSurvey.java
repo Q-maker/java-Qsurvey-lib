@@ -28,6 +28,9 @@ import java.util.List;
 
 import istat.android.base.tools.TextUtils;
 
+/**
+ * @author Toukea Tatsi J
+ */
 public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionStateChangeListener {
     static QSurvey instance;
     final List<SurveyStateListener> listeners = new ArrayList<>();
