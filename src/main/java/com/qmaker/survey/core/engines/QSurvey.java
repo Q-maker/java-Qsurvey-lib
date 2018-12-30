@@ -161,7 +161,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
             List<PushOrder> orders = handleSurveyResultAsPushOrder(result);
             dispatchSurveyStateChanged(SurveyStateListener.STATE_COMPLETED, runningSurvey, result, orders);
             publishOrder(runningSurvey, orders);
-            return Survey.TYPE_SYNCHRONOUS.equals(runningSurvey.getType());//TODO ien reflechir a cette condition de dispatching en fonction du type de la survey
+            return runningSurvey.isBlockingPublisherNeeded();
         }
         return false;
     }
@@ -182,10 +182,10 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     private void publishOrder(Survey survey, List<PushOrder> orders) {
         try {
-            if (!Survey.TYPE_SYNCHRONOUS.equals(survey.getType())) {
-                getPushExecutor().enqueue(orders);
-            } else {
+            if (survey.isBlockingPublisherNeeded()) {
                 getPushExecutor().enqueue(0, orders);
+            } else {
+                getPushExecutor().enqueue(orders);
             }
         } catch (Exception e) {
             e.printStackTrace();

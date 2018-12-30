@@ -64,7 +64,7 @@ public class ExampleUnitTest {
         project.setQuestionnaire(MockUps.questionnaireAllType());
         ComponentManager manager = ComponentManager.getInstance();
         Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
-        builder.setType(Survey.TYPE_ANONYMOUS)
+        builder//.setType(Survey.TYPE_ANONYMOUS)
                 .setDefaultCompletionMessage(defaultMessage)
                 .setProcessingMessage(processingMessage)
                 .appendRepository(mockUpRepository("0"))
@@ -95,12 +95,12 @@ public class ExampleUnitTest {
     }
 
     private Repository mockUpRepository(String id) {
-        Repository repository = new Repository();
+        Repository.Definition repository = new Repository.Definition();
         repository.setGrandType(Repository.GRAND_TYPE_WSSE);
         repository.setUri("www.google.com/" + id);
         repository.putIdentity("username", "toukea" + id);
         repository.putIdentity("password", "istatyouth" + id);
-        return repository;
+        return repository.create();
     }
 
     public void buildProjectTest(QPackage project) throws Exception {

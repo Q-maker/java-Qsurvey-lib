@@ -3,7 +3,6 @@ package com.qmaker.survey.core.entities;
 import com.google.gson.reflect.TypeToken;
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
-import com.qmaker.core.entities.Author;
 import com.qmaker.core.entities.CopySheet;
 import com.qmaker.core.entities.QSummary;
 import com.qmaker.core.entities.Questionnaire;
@@ -22,9 +21,9 @@ import istat.android.base.tools.TextUtils;
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
 public class Survey {
 
-    public final static String TYPE_ANONYMOUS = "anonymous",
-            TYPE_ASYNCHONOUS = "asynchronous",
-            TYPE_SYNCHRONOUS = "synchronous";
+    //    public final static String TYPE_ANONYMOUS = "anonymous",
+//            TYPE_ASYNCHONOUS = "asynchronous",
+//            TYPE_SYNCHRONOUS = "synchronous";
     final static String NAMESPACE = "survey";
     Component component;
     public static String
@@ -32,7 +31,8 @@ public class Survey {
             FIELD_TYPE = "type",
             FIELD_REPOSITORIES = "repositories",
             FIELD_DEFAULT_COMPLETION_MESSAGE = "default_completion_message",
-            FIELD_PROCESSING_MESSAGE = "processing_message";
+            FIELD_PROCESSING_MESSAGE = "processing_message",
+            FIELD_BLOCKING_PUBLISHER_ALLOWED = "blocking_publisher_allowed";
 
     private Survey(Component component) {
         this.component = component;
@@ -58,8 +58,20 @@ public class Survey {
         return getQPackage().getSummary().getConfig();
     }
 
-    public Questionnaire getQuestionaire() throws IOException {
+    public Questionnaire getQuestionnaire() throws IOException {
         return getQPackage().getQuestionnaire();
+    }
+
+    public boolean isBlockingPublisherNeeded() {
+        return !isAnonymous() && isBLockingPublisherAllowed();
+    }
+
+    public boolean isBLockingPublisherAllowed() {
+        return component.getSummaryProperties().getBoolean(FIELD_BLOCKING_PUBLISHER_ALLOWED);
+    }
+
+    public boolean isAnonymous() {
+        return false;
     }
 
     List<Repository> repositories;
@@ -119,9 +131,12 @@ public class Survey {
     }
 
     public static class DefinitionBuilder {
-        String type, id;
+        String //type,
+                id;
         final List<Repository> repositories = new ArrayList<>();
         String processingMassage, defaultCompletionMessage;
+        boolean blockingPublisherAllowed = false;
+        boolean anonymous = false;
 
 
         public DefinitionBuilder setId(String id) {
@@ -129,10 +144,10 @@ public class Survey {
             return this;
         }
 
-        public DefinitionBuilder setType(String type) {
-            this.type = type;
-            return this;
-        }
+//        public DefinitionBuilder setType(String type) {
+//            this.type = type;
+//            return this;
+//        }
 
         public DefinitionBuilder setDefaultCompletionMessage(String defaultCompletionMessage) {
             this.defaultCompletionMessage = defaultCompletionMessage;
@@ -165,13 +180,23 @@ public class Survey {
             return this;
         }
 
+        public DefinitionBuilder setBlockingPublisherAllowed(boolean blockingPublisherAllowed) {
+            this.blockingPublisherAllowed = blockingPublisherAllowed;
+            return this;
+        }
+
+        public DefinitionBuilder setAnonymous(boolean anonymous) {
+            this.anonymous = anonymous;
+            return this;
+        }
+
         public Component.Definition create() {
             Component.Definition definition = new Component.Definition(Survey.NAMESPACE);
-            definition.setSummaryProperties(FIELD_ID, id);
-            definition.setSummaryProperties(FIELD_TYPE, type);
-            definition.setSummaryProperties(FIELD_DEFAULT_COMPLETION_MESSAGE, defaultCompletionMessage);
-            definition.setSummaryProperties(FIELD_PROCESSING_MESSAGE, processingMassage);
-            definition.setSummaryProperties(FIELD_REPOSITORIES, repositories);
+            definition.putSummaryProperty(FIELD_ID, id);
+            definition.putSummaryProperty(FIELD_DEFAULT_COMPLETION_MESSAGE, defaultCompletionMessage);
+            definition.putSummaryProperty(FIELD_PROCESSING_MESSAGE, processingMassage);
+            definition.putSummaryProperty(FIELD_REPOSITORIES, repositories);
+            definition.putAllSummaryProperties(FIELD_REPOSITORIES, repositories);
             return definition;
         }
     }

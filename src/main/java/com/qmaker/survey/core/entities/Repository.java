@@ -179,7 +179,7 @@ public class Repository implements JSONable, IconItem {
             return this;
         }
 
-        public Definition putIdentinty(String name, String value) {
+        public Definition putIdentity(String name, String value) {
             this.identity.put(name, value);
             return this;
         }
