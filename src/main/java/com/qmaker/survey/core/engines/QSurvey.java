@@ -140,8 +140,8 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     @Override
     public boolean onRunningTimeOut(QPackage qPackage, Test test) {
-        if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_TIME_OUT, runningSurvey, test);
+        if (notifySurveyCompleted(SurveyStateListener.STATE_TIME_OUT, qPackage, test)) {
+            return true;
         }
         return false;
     }
@@ -156,11 +156,19 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     @Override
     public boolean onFinishRunning(QPackage qPackage, Test test) {
+        if (notifySurveyCompleted(SurveyStateListener.STATE_COMPLETED, qPackage, test)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean notifySurveyCompleted(int state, QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
             Survey.Result result = runningSurvey.getResult(test);
             List<PushOrder> orders = handleSurveyResultAsPushOrder(result);
-            dispatchSurveyStateChanged(SurveyStateListener.STATE_COMPLETED, runningSurvey, result, orders);
+            dispatchSurveyStateChanged(state, runningSurvey, result, orders);
             publishOrder(runningSurvey, orders);
+            //TODO reflechir si il est pas mieux de toute façon de prendre le controle total ce qui permetrait de dérer si le replay est possible avec les autre configuration de la survey
             return runningSurvey.isBlockingPublisherNeeded();
         }
         return false;

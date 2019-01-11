@@ -8,6 +8,7 @@ import com.qmaker.core.entities.QSummary;
 import com.qmaker.core.entities.Questionnaire;
 import com.qmaker.core.entities.Test;
 import com.qmaker.core.io.QPackage;
+import com.qmaker.core.utils.Bundle;
 import com.qmaker.core.utils.ToolKits;
 
 import java.io.IOException;
@@ -32,7 +33,9 @@ public class Survey {
             FIELD_REPOSITORIES = "repositories",
             FIELD_DEFAULT_COMPLETION_MESSAGE = "default_completion_message",
             FIELD_PROCESSING_MESSAGE = "processing_message",
-            FIELD_BLOCKING_PUBLISHER_ALLOWED = "blocking_publisher_allowed";
+            FIELD_IS_ANONYMOUS = "anonymous",
+            FIELD_BLOCKING_PUBLISHER_ALLOWED = "blocking_publisher_allowed",
+            FIELD_REPLAY_ALLOWED = "replay_allowed";
 
     private Survey(Component component) {
         this.component = component;
@@ -61,6 +64,22 @@ public class Survey {
     public Questionnaire getQuestionnaire() throws IOException {
         return getQPackage().getQuestionnaire();
     }
+    /*
+      public boolean isBlockingPublisherNeeded() {
+//        return !isAnonymous() && isBLockingPublisherAllowed();
+        //TODO laver tous ça apres le debuguage.
+        boolean anonymous = isAnonymous();
+        boolean blocking = isBLockingPublisherAllowed();
+        boolean result = !anonymous && blocking;
+        return result;
+    }
+
+    public boolean isBLockingPublisherAllowed() {
+        Bundle bundle = component.getSummaryProperties();
+        boolean result = bundle.getBoolean(FIELD_BLOCKING_PUBLISHER_ALLOWED);
+        return result;
+    }
+     */
 
     public boolean isBlockingPublisherNeeded() {
         return !isAnonymous() && isBLockingPublisherAllowed();
@@ -71,7 +90,11 @@ public class Survey {
     }
 
     public boolean isAnonymous() {
-        return false;
+        return component.getSummaryProperties().getBoolean(FIELD_IS_ANONYMOUS);
+    }
+
+    public boolean isReplayAllowed() {
+        return component.getSummaryProperties().getBoolean(FIELD_REPLAY_ALLOWED);
     }
 
     List<Repository> repositories;
@@ -135,7 +158,8 @@ public class Survey {
                 id;
         final List<Repository> repositories = new ArrayList<>();
         String processingMassage, defaultCompletionMessage;
-        boolean blockingPublisherAllowed = false;
+        boolean blockingPublisherAllowed = false,
+                replayAllowed = false;
         boolean anonymous = false;
 
 
@@ -144,7 +168,12 @@ public class Survey {
             return this;
         }
 
-//        public DefinitionBuilder setType(String type) {
+        public DefinitionBuilder setReplayAllowed(boolean replayAllowed) {
+            this.replayAllowed = replayAllowed;
+            return this;
+        }
+
+        //        public DefinitionBuilder setType(String type) {
 //            this.type = type;
 //            return this;
 //        }
@@ -180,6 +209,14 @@ public class Survey {
             return this;
         }
 
+        public DefinitionBuilder setRepositores(Repository... repositories) {
+            this.repositories.clear();
+            for (Repository repository : repositories) {
+                appendRepository(repository);
+            }
+            return this;
+        }
+
         public DefinitionBuilder setBlockingPublisherAllowed(boolean blockingPublisherAllowed) {
             this.blockingPublisherAllowed = blockingPublisherAllowed;
             return this;
@@ -195,6 +232,9 @@ public class Survey {
             definition.putSummaryProperty(FIELD_ID, id);
             definition.putSummaryProperty(FIELD_DEFAULT_COMPLETION_MESSAGE, defaultCompletionMessage);
             definition.putSummaryProperty(FIELD_PROCESSING_MESSAGE, processingMassage);
+            definition.putSummaryProperty(FIELD_IS_ANONYMOUS, anonymous);
+            definition.putSummaryProperty(FIELD_BLOCKING_PUBLISHER_ALLOWED, blockingPublisherAllowed);
+            definition.putSummaryProperty(FIELD_REPLAY_ALLOWED, replayAllowed);
             definition.putSummaryProperty(FIELD_REPOSITORIES, repositories);
             definition.putAllSummaryProperties(FIELD_REPOSITORIES, repositories);
             return definition;
