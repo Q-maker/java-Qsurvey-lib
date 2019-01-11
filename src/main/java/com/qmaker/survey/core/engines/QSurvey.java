@@ -140,8 +140,8 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
 
     @Override
     public boolean onRunningTimeOut(QPackage qPackage, Test test) {
-        if (notifySurveyCompleted(SurveyStateListener.STATE_TIME_OUT, qPackage, test)) {
-            return true;
+        if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_TIME_OUT, runningSurvey, test);
         }
         return false;
     }
