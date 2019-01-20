@@ -2,6 +2,7 @@ package com.qmaker.survey.core.engines;
 
 import com.qmaker.survey.core.entities.PushOrder;
 
+//TODO reflechir au bien fonder de retourner l'ordre envoyé.
 public class PushResult implements PushResponse {
     private final PushOrder content;
     String message;

@@ -139,6 +139,10 @@ public class Survey {
         return component.getSummaryStringProperty(FIELD_DEFAULT_COMPLETION_MESSAGE);
     }
 
+    public int getRepositoryCount() {
+        return getRepositories().size();
+    }
+
     public static class InvalidSurveyException extends Exception {
         public InvalidSurveyException(Throwable e) {
             super(e);

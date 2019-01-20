@@ -12,7 +12,8 @@ public interface PushProcess {
             STATE_PROCESSING = PushOrder.STATE_PROCESSING,
             STATE_PENDING = PushOrder.STATE_PENDING;
 
-    boolean onProceed(PushOrder order, Pusher.Callback callback);
+    //TODO Choisir entre passer un callback et retourner un Boolean ou ne rien passer et retourner un promise.
+    boolean proceed(PushOrder order, Pusher.Callback callback);
 
     boolean cancel();
 

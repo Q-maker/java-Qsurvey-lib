@@ -36,12 +36,8 @@ public abstract class ThreadPushProcess implements PushProcess, Runnable {
         }
     }
 
-    public final boolean proceed(PushOrder order, Pusher.Callback callback) {
-        return onProceed(order, callback);
-    }
-
     @Override
-    public final boolean onProceed(PushOrder order, Pusher.Callback callback) {
+    public final boolean proceed(PushOrder order, Pusher.Callback callback) {
         this.failCause = null;
         this.response = null;
         this.order = order;

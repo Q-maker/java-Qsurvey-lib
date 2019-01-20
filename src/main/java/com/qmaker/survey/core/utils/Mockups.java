@@ -29,8 +29,7 @@ public class Mockups {
             builder//.setType(Survey.TYPE_ANONYMOUS)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"))
-                    .appendRepository(mockUpRepository("1"));
+                    .appendRepository(mockUpRepository("0"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -54,8 +53,7 @@ public class Mockups {
             builder.setBlockingPublisherAllowed(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"))
-                    .appendRepository(mockUpRepository("1"));
+                    .appendRepository(mockUpRepository("0"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -79,8 +77,7 @@ public class Mockups {
             builder.setAnonymous(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"))
-                    .appendRepository(mockUpRepository("1"));
+                    .appendRepository(mockUpRepository("0"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -92,13 +89,13 @@ public class Mockups {
 
 
     public static Repository mockUpRepository() {
-        return mockUpRepository("");
+        return mockUpRepository(Math.random() + "");
     }
 
     public static Repository mockUpRepository(String id) {
         Repository.Definition repository = new Repository.Definition();
-        repository.setGrandType(Repository.GRAND_TYPE_WSSE);
-        repository.setUri("www.google.com/" + id);
+        repository.setGrandType("firebase");
+        repository.setUri("firebase://db/survey/collect/" + id);
         repository.putIdentity("username", "toukea" + id);
         repository.putIdentity("password", "istatyouth" + id);
         return repository.create();
