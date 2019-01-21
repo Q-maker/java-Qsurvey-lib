@@ -280,6 +280,10 @@ public class Survey {
         public Survey getOrigin() {
             return Survey.this;
         }
+
+        public Questionnaire getQuestionnaire() {
+            return getTest().getQuestionnaire();
+        }
     }
 
 }
