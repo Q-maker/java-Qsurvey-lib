@@ -35,7 +35,8 @@ public class Survey {
             FIELD_PROCESSING_MESSAGE = "processing_message",
             FIELD_IS_ANONYMOUS = "anonymous",
             FIELD_BLOCKING_PUBLISHER_ALLOWED = "blocking_publisher_allowed",
-            FIELD_REPLAY_ALLOWED = "replay_allowed";
+            FIELD_REPLAY_ALLOWED = "replay_allowed",
+            FIELD_FORM = "form";
 
     private Survey(Component component) {
         this.component = component;
@@ -110,6 +111,35 @@ public class Survey {
         return repositories;
     }
 
+    Form form;
+
+    public Form getForm() {
+        try {
+            if (form != null) {
+                return form;
+            }
+            form = component.getSummaryProperties(FIELD_FORM, Form.class);
+            return form;
+        } catch (Exception e) {
+            if (hasForm()) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    public boolean hasForm() {
+        return component.getSummaryProperties().containsKey(FIELD_FORM);
+    }
+
+    public boolean isFormMandatory() {
+        Form form = getForm();
+        if (form != null) {
+            return form.hasMandatoryField();
+        }
+        return false;
+    }
+
     public String getType() {
         return component.getSummaryStringProperty(FIELD_TYPE);
     }
@@ -165,6 +195,7 @@ public class Survey {
         boolean blockingPublisherAllowed = false,
                 replayAllowed = false;
         boolean anonymous = false;
+        Form form;
 
 
         public DefinitionBuilder setId(String id) {
@@ -177,6 +208,10 @@ public class Survey {
             return this;
         }
 
+        public DefinitionBuilder setForm(Form form) {
+            this.form = form;
+            return this;
+        }
         //        public DefinitionBuilder setType(String type) {
 //            this.type = type;
 //            return this;
