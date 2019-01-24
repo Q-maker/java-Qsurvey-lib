@@ -4,6 +4,7 @@ import com.qmaker.survey.core.engines.PushError;
 import com.qmaker.survey.core.engines.PushResult;
 import com.qmaker.survey.core.entities.PushOrder;
 
+//TODO penser a une possibilité de checker (a l'aide d1 HEAD) si le repository est available.
 public interface Pusher {
 
     PushProcess push(PushOrder order, Pusher.Callback callback) throws Exception;
