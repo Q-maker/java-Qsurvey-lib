@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import istat.android.base.tools.TextUtils;
+import istat.android.base.utils.ListLinkedHashMap;
 
 public class Form {
 
@@ -128,6 +129,13 @@ public class Form {
     }
 
     public static class Field {
+        public int ERROR_TYPE_EMPTY_CONTENT = 0,
+                ERROR_FIELD_CONTENT_NOT_MATCH = 1;
+        public final static int
+                INPUT_TYPE_TEXT = 0x00000001,
+                INPUT_TYPE_NUMBER = 0x00000002,
+                INPUT_TYPE_PHONE = 0x00000003,
+                INPUT_TYPE_DATE = 0x00000004;
         String name;
         String inputType, pattern;
         Object value;
@@ -139,6 +147,17 @@ public class Form {
 
         Field() {
 
+        }
+
+        public List<Integer> checkup() {
+            List<Integer> out = new ArrayList();
+            if ((value == null || TextUtils.isEmpty(value.toString())) && mandatory) {
+                out.add(ERROR_TYPE_EMPTY_CONTENT);
+            }
+            if (value != null && value.toString().matches(pattern)) {
+                out.add(ERROR_FIELD_CONTENT_NOT_MATCH);
+            }
+            return out;
         }
 
         public boolean isMandatory() {
@@ -295,6 +314,28 @@ public class Form {
             } catch (Exception e) {
                 return deFault;
             }
+        }
+    }
+
+    public CheckResult checkUp() {
+        return new CheckResult(this);
+    }
+
+    public class CheckResult {
+        ListLinkedHashMap<Field, Integer> errorsMap = new ListLinkedHashMap<>();
+
+        public CheckResult(Form form) {
+            for (Field field : form.getFields()) {
+                errorsMap.put(field, field.checkup());
+            }
+        }
+
+        public List<Integer> getFieldErrors(String fieldName) {
+            return errorsMap.get(fieldName);
+        }
+
+        public List<Field> getWrongFields() {
+            return new ArrayList(errorsMap.keySet());
         }
     }
 }

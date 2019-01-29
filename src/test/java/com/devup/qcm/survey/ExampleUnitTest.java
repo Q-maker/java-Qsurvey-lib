@@ -1,5 +1,7 @@
 package com.devup.qcm.survey;
 
+import android.text.InputType;
+
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.engines.QSystem;
