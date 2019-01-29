@@ -19,11 +19,13 @@ public class Repository implements JSONable, IconItem {
     public static final String GRAND_TYPE_HTTP_DIGEST = "http_digest";
     String uri;
     String grandType;
-    HashMap<String, String> identity = new HashMap<>();
+    Form identityForm;
 
-    public Repository putIdentity(String name, String value) {
-        identity.put(name, value);
-        return this;
+    public Form.Field putIdentity(String name, String value) {
+        if (identityForm != null) {
+            return identityForm.putField(name, value);
+        }
+        return null;
     }
 
     Repository() {
@@ -31,7 +33,15 @@ public class Repository implements JSONable, IconItem {
     }
 
     public String getIdentity(String name) {
-        return identity.get(name);
+        return getIdentities().get(name);
+    }
+
+    public HashMap<String, String> getIdentities() {
+        HashMap<String, String> result = new HashMap();
+        for (Form.Field field : identityForm.getFields()) {
+            result.put(field.getName(), field.getValueString());
+        }
+        return result;
     }
 
     public String getGrandType() {
@@ -79,7 +89,7 @@ public class Repository implements JSONable, IconItem {
             json.put(FIELD_GRAND_TYPE, grandType);
             JSONObject jsonIdentity = new JSONObject();
             Gson gson = new Gson();
-            JSONObject jsonIdentityContent = new JSONObject(gson.toJson(identity));
+            JSONObject jsonIdentityContent = new JSONObject(gson.toJson(getIdentities()));
             jsonIdentity.put(grandType.equals(GRAND_TYPE_HTTP_BASIC) ? FIELD_IDENTITY_USER : FIELD_IDENTITY_TOKEN, jsonIdentityContent);
             json.put(FIELD_IDENTITY, jsonIdentity);
             return json;
@@ -89,36 +99,36 @@ public class Repository implements JSONable, IconItem {
         }
     }
 
-    public static Repository fromHttpBasic(String username, String password) {
-        Repository auth = new Repository();
-        auth.grandType = GRAND_TYPE_HTTP_BASIC;
-        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
-        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
-        return auth;
-    }
-
-    public static Repository fromWsse(String username, String password) {
-        Repository auth = new Repository();
-        auth.grandType = GRAND_TYPE_WSSE;
-        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
-        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
-        return auth;
-    }
-
-    public static Repository fromFtp(String username, String password) {
-        Repository auth = new Repository();
-        auth.grandType = GRAND_TYPE_FTP;
-        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
-        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
-        return auth;
-    }
-
-    public static Repository fromRefreshToken(String tokenId) {
-        Repository auth = new Repository();
-        auth.grandType = GRAND_TYPE_REFRESH_TOKEN;
-        auth.putIdentity(Repository.IDENTITY_TOKEN_ID, tokenId);
-        return auth;
-    }
+//    public static Repository fromHttpBasic(String username, String password) {
+//        Repository auth = new Repository();
+//        auth.grandType = GRAND_TYPE_HTTP_BASIC;
+//        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+//        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
+//        return auth;
+//    }
+//
+//    public static Repository fromWsse(String username, String password) {
+//        Repository auth = new Repository();
+//        auth.grandType = GRAND_TYPE_WSSE;
+//        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+//        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
+//        return auth;
+//    }
+//
+//    public static Repository fromFtp(String username, String password) {
+//        Repository auth = new Repository();
+//        auth.grandType = GRAND_TYPE_FTP;
+//        auth.putIdentity(Repository.IDENTITY_USER_NAME, username);
+//        auth.putIdentity(Repository.IDENTITY_PASSWORD, password);
+//        return auth;
+//    }
+//
+//    public static Repository fromRefreshToken(String tokenId) {
+//        Repository auth = new Repository();
+//        auth.grandType = GRAND_TYPE_REFRESH_TOKEN;
+//        auth.putIdentity(Repository.IDENTITY_TOKEN_ID, tokenId);
+//        return auth;
+//    }
 
     String iconUri, name, description;
 
@@ -144,7 +154,7 @@ public class Repository implements JSONable, IconItem {
     public static class Definition {
 
         String name, description, iconUri, uri, grandType;
-        HashMap<String, String> identity = new HashMap<>();
+        Form identityForm = new Form();
 
         public Definition setDescription(String description) {
             this.description = description;
@@ -171,17 +181,20 @@ public class Repository implements JSONable, IconItem {
             return this;
         }
 
-        public Definition setIdentity(HashMap<String, String> identity) {
-            this.identity.clear();
+        public HashMap<String, Form.Field> setIdentity(HashMap<String, String> identity) {
+            this.identityForm.clear();
             if (identity != null) {
-                this.identity.putAll(identity);
+                return this.identityForm.putFields(identity);
             }
-            return this;
+            return null;
         }
 
-        public Definition putIdentity(String name, String value) {
-            this.identity.put(name, value);
-            return this;
+        public Form.Field putIdentity(String name, String value) {
+            return this.identityForm.putField(name, value);
+        }
+
+        public Form getIdentityForm() {
+            return identityForm;
         }
 
         public Repository create() {
@@ -190,7 +203,7 @@ public class Repository implements JSONable, IconItem {
             repository.grandType = grandType;
             repository.uri = uri;
             repository.iconUri = iconUri;
-            repository.identity = identity;
+            repository.identityForm = identityForm;
             repository.description = description;
             return repository;
         }

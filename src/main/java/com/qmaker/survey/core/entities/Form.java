@@ -7,10 +7,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import istat.android.base.tools.TextUtils;
 
 public class Form {
 
-    final HashMap<String, Field> filedMap = new HashMap();
+    final HashMap<String, Field> fieldMap = new HashMap();
 
     public Form() {
         this(null);
@@ -18,20 +21,36 @@ public class Form {
 
     public Form(HashMap<String, Field> fieldMap) {
         if (fieldMap != null) {
-            this.filedMap.putAll(fieldMap);
+            this.fieldMap.putAll(fieldMap);
         }
     }
 
+    public void clear() {
+        fieldMap.clear();
+    }
+
+    public Field removeField(String fieldName) {
+        return fieldMap.remove(fieldName);
+    }
+
     public Field getField(String name) {
-        return this.filedMap.get(name);
+        return this.fieldMap.get(name);
     }
 
     public List<Field> getFields() {
-        return new ArrayList(this.filedMap.values());
+        return new ArrayList(this.fieldMap.values());
+    }
+
+    public HashMap<String, Object> getNameValue() {
+        HashMap<String, Object> result = new HashMap();
+        for (Field field : getFields()) {
+            result.put(field.getName(), field.getValue());
+        }
+        return result;
     }
 
     public boolean isFieldDefined(String name) {
-        return this.filedMap.containsKey(name);
+        return this.fieldMap.containsKey(name);
     }
 
     public boolean hasMandatoryField() {
@@ -49,7 +68,7 @@ public class Form {
     }
 
     public Field putField(String name, String inputType, String pattern, Object value) {
-        Field field = new Field(name);
+        FieldDefinition field = new FieldDefinition(name);
         field.setInputType(inputType);
         field.setPattern(pattern);
         if (field.setValue(value)) {
@@ -61,9 +80,51 @@ public class Form {
 
     public Field put(Field field) {
         if (field != null) {
-            return this.filedMap.put(field.getName(), field);
+            return this.fieldMap.put(field.getName(), field);
         }
         return null;
+    }
+
+    public Field put(FieldDefinition field) {
+        if (field != null) {
+            return this.fieldMap.put(field.getName(), field);
+        }
+        return null;
+    }
+
+    public <T> HashMap<String, Field> putFields(HashMap<String, T> identity) {
+        HashMap<String, Field> result = new HashMap();
+        for (Map.Entry<String, T> entry : identity.entrySet()) {
+            result.put(entry.getKey(), putField(entry.getKey(), entry.getValue()));
+        }
+        return result;
+    }
+
+    public static class FieldDefinition extends Field {
+
+        public FieldDefinition(String name) {
+            super(name);
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setMandatory(boolean mandatory) {
+            this.mandatory = mandatory;
+        }
+
+        public void setMasked(boolean masked) {
+            this.masked = masked;
+        }
+
+        public void setInputType(String inputType) {
+            this.inputType = inputType;
+        }
+
+        public void setPattern(String pattern) {
+            this.pattern = pattern;
+        }
     }
 
     public static class Field {
@@ -84,30 +145,14 @@ public class Form {
             return mandatory;
         }
 
-        public void setMandatory(boolean mandatory) {
-            this.mandatory = mandatory;
-        }
-
-        public void setMasked(boolean masked) {
-            this.masked = masked;
-        }
-
         public boolean isMasked() {
             return masked;
-        }
-
-        public void setInputType(String inputType) {
-            this.inputType = inputType;
-        }
-
-        public void setPattern(String pattern) {
-            this.pattern = pattern;
         }
 
         public boolean setValue(Object value) {
             if (value != null && value instanceof CharSequence) {
                 String charSequence = value.toString();
-                if (!charSequence.matches(pattern)) {
+                if (!TextUtils.isEmpty(pattern) && !charSequence.matches(pattern)) {
                     return false;
                 }
             }
