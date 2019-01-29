@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import istat.android.base.tools.TextUtils;
-import istat.android.base.utils.ListLinkedHashMap;
 
 public class Form {
 
@@ -39,7 +38,8 @@ public class Form {
     }
 
     public List<Field> getFields() {
-        return new ArrayList(this.fieldMap.values());
+        List<Field> fields = new ArrayList(this.fieldMap.values());
+        return fields;
     }
 
     public HashMap<String, Object> getNameValue() {
@@ -73,6 +73,7 @@ public class Form {
         field.setInputType(inputType);
         field.setPattern(pattern);
         if (field.setValue(value)) {
+            fieldMap.put(name, field);
             return field;
         } else {
             return null;
@@ -129,13 +130,14 @@ public class Form {
     }
 
     public static class Field {
-        public int ERROR_TYPE_EMPTY_CONTENT = 0,
-                ERROR_FIELD_CONTENT_NOT_MATCH = 1;
-        public final static int
-                INPUT_TYPE_TEXT = 0x00000001,
-                INPUT_TYPE_NUMBER = 0x00000002,
-                INPUT_TYPE_PHONE = 0x00000003,
-                INPUT_TYPE_DATE = 0x00000004;
+        public final static int ERROR_TYPE_NONE = 0,
+                ERROR_TYPE_EMPTY_CONTENT = 0x00000001,
+                ERROR_TYPE_CONTENT_NOT_MATCH = 0x00000010;
+        public final static String
+                INPUT_TYPE_TEXT = "text",
+                INPUT_TYPE_NUMBER = "number",
+                INPUT_TYPE_PHONE = "phone",
+                INPUT_TYPE_DATE = "date";
         String name;
         String inputType, pattern;
         Object value;
@@ -149,13 +151,13 @@ public class Form {
 
         }
 
-        public List<Integer> checkup() {
-            List<Integer> out = new ArrayList();
+        public int checkup() {
+            int out = ERROR_TYPE_NONE;
             if ((value == null || TextUtils.isEmpty(value.toString())) && mandatory) {
-                out.add(ERROR_TYPE_EMPTY_CONTENT);
+                out |= ERROR_TYPE_EMPTY_CONTENT;
             }
             if (value != null && value.toString().matches(pattern)) {
-                out.add(ERROR_FIELD_CONTENT_NOT_MATCH);
+                out |= ERROR_TYPE_CONTENT_NOT_MATCH;
             }
             return out;
         }
@@ -322,7 +324,7 @@ public class Form {
     }
 
     public class CheckResult {
-        ListLinkedHashMap<Field, Integer> errorsMap = new ListLinkedHashMap<>();
+        HashMap<Field, Integer> errorsMap = new HashMap();
 
         public CheckResult(Form form) {
             for (Field field : form.getFields()) {
@@ -330,12 +332,20 @@ public class Form {
             }
         }
 
-        public List<Integer> getFieldErrors(String fieldName) {
+        public boolean hasError(String fieldName, int error) {
+            return (errorsMap.get(fieldName) & error) == errorsMap.get(fieldName);
+        }
+
+        public int getFieldError(String fieldName) {
             return errorsMap.get(fieldName);
         }
 
         public List<Field> getWrongFields() {
             return new ArrayList(errorsMap.keySet());
+        }
+
+        public boolean hasErrors() {
+            return !errorsMap.isEmpty();
         }
     }
 }

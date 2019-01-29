@@ -13,6 +13,7 @@ import com.qmaker.core.io.QPackage;
 import com.qmaker.core.io.QProject;
 import com.qmaker.core.utils.MockUps;
 import com.qmaker.core.utils.ZipFileIoInterface;
+import com.qmaker.survey.core.entities.Form;
 import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 
@@ -32,6 +33,18 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+
+    @Test
+    public void formTest() {
+        assertEquals(4, 2 + 2);
+        Form form = new Form();
+        form.putField("username", Form.Field.INPUT_TYPE_TEXT, ".{4,}", "hello");
+        form.putField("password", Form.Field.INPUT_TYPE_TEXT, ".{8,}", "istat-youth2");
+        form.putField("name", Form.Field.INPUT_TYPE_TEXT, null, "Toukéa Tatsi");
+        Form.CheckResult result = form.checkUp();
+        boolean error = result.hasErrors();
+        assertTrue(!error);
     }
 
     @Test
