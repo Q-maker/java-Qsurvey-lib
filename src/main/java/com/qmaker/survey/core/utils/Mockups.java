@@ -4,6 +4,7 @@ import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.engines.QSystem;
 import com.qmaker.core.engines.Qmaker;
+import com.qmaker.core.entities.Qcm;
 import com.qmaker.core.io.QPackage;
 import com.qmaker.core.io.QProject;
 import com.qmaker.core.utils.MemoryIoInterface;
@@ -12,6 +13,8 @@ import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Random;
 
 public class Mockups {
 
@@ -47,6 +50,13 @@ public class Mockups {
             MemoryIoInterface ioi = new MemoryIoInterface();
             QSystem system = new QSystem(ioi);
             QPackage project = MockUps.qPackage7(system, fileUri);
+            List<Qcm> qcms = project.getQuestionnaire().getQcms();
+            Random random = new Random();
+            for (Qcm qcm : qcms) {
+                if (random.nextBoolean()) {
+                    qcm.getQuestion().setSoundUri("file:///sdcard/audioTest.3gpp");
+                }
+            }
             ioi.append(project);
             ComponentManager manager = ComponentManager.getInstance();
             Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();

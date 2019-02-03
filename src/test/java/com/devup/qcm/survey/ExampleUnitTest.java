@@ -1,14 +1,10 @@
 package com.devup.qcm.survey;
 
-import android.text.InputType;
-
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.engines.QSystem;
 import com.qmaker.core.engines.Qmaker;
-import com.qmaker.core.entities.Author;
 import com.qmaker.core.entities.Qcm;
-import com.qmaker.core.entities.Questionnaire;
 import com.qmaker.core.io.QPackage;
 import com.qmaker.core.io.QProject;
 import com.qmaker.core.utils.MockUps;
@@ -39,9 +35,9 @@ public class ExampleUnitTest {
     public void formTest() {
         assertEquals(4, 2 + 2);
         Form form = new Form();
-        form.putField("username", Form.Field.INPUT_TYPE_TEXT, ".{4,}", "hello");
-        form.putField("password", Form.Field.INPUT_TYPE_TEXT, ".{8,}", "istat-youth2");
-        form.putField("name", Form.Field.INPUT_TYPE_TEXT, null, "Toukéa Tatsi");
+        form.putField("username", Form.Field.INPUT_TYPE_TEXT, "hello", ".{4,}");
+        form.putField("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
+        form.putField("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
         Form.CheckResult result = form.checkUp();
         boolean error = result.hasErrors();
         assertTrue(!error);

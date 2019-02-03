@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class Form {
         return fields;
     }
 
-    public HashMap<String, Object> getNameValue() {
+    public HashMap<String, Object> getContentMap() {
         HashMap<String, Object> result = new HashMap();
         for (Field field : getFields()) {
             result.put(field.getName(), field.getValue());
@@ -65,19 +66,15 @@ public class Form {
     }
 
     public Field putField(String name, Object value) {
-        return putField(name, null, null, value);
+        return putField(name, null, value, null, null);
     }
 
-    public Field putField(String name, String inputType, String pattern, Object value) {
+    public Field putField(String name, String inputType, Object value, String pattern, String validationErrorMessage) {
         FieldDefinition field = new FieldDefinition(name);
         field.setInputType(inputType);
-        field.setPattern(pattern);
-        if (field.setValue(value)) {
-            fieldMap.put(name, field);
-            return field;
-        } else {
-            return null;
-        }
+        field.appendValidator(pattern, validationErrorMessage);
+        fieldMap.put(name, field);
+        return field;
     }
 
     public Field put(Field field) {
@@ -124,8 +121,9 @@ public class Form {
             this.inputType = inputType;
         }
 
-        public void setPattern(String pattern) {
-            this.pattern = pattern;
+        public Field appendValidator(String pattern, String errorMessage) {
+            patternErrorMessageMap.put(pattern, errorMessage);
+            return this;
         }
     }
 
@@ -139,9 +137,10 @@ public class Form {
                 INPUT_TYPE_PHONE = "phone",
                 INPUT_TYPE_DATE = "date";
         String name;
-        String inputType, pattern;
+        String inputType;
         Object value;
         boolean mandatory, masked;
+        final Map<String, String> patternErrorMessageMap = new LinkedHashMap<>();
 
         public Field(String name) {
             this.name = name;
@@ -151,14 +150,15 @@ public class Form {
 
         }
 
+
         public int checkup() {
             int out = ERROR_TYPE_NONE;
             if ((value == null || TextUtils.isEmpty(value.toString())) && mandatory) {
                 out |= ERROR_TYPE_EMPTY_CONTENT;
             }
-            if (value != null && value.toString().matches(pattern)) {
-                out |= ERROR_TYPE_CONTENT_NOT_MATCH;
-            }
+//            if (value != null && value.toString().matches(pattern)) {
+//                out |= ERROR_TYPE_CONTENT_NOT_MATCH;
+//            }
             return out;
         }
 
@@ -170,15 +170,8 @@ public class Form {
             return masked;
         }
 
-        public boolean setValue(Object value) {
-            if (value != null && value instanceof CharSequence) {
-                String charSequence = value.toString();
-                if (!TextUtils.isEmpty(pattern) && !charSequence.matches(pattern)) {
-                    return false;
-                }
-            }
+        public void setValue(Object value) {
             this.value = value;
-            return true;
         }
 
         public String getName() {
@@ -187,10 +180,6 @@ public class Form {
 
         public String getInputType() {
             return inputType;
-        }
-
-        public String getPattern() {
-            return pattern;
         }
 
 
