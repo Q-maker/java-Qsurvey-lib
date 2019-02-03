@@ -132,14 +132,6 @@ public class Survey {
         return component.getSummaryProperties().containsKey(FIELD_FORM);
     }
 
-    public boolean isFormMandatory() {
-        Form form = getForm();
-        if (form != null) {
-            return form.hasMandatoryField();
-        }
-        return false;
-    }
-
     public String getType() {
         return component.getSummaryStringProperty(FIELD_TYPE);
     }
@@ -208,8 +200,8 @@ public class Survey {
             return this;
         }
 
-        public DefinitionBuilder setForm(Form form) {
-            this.form = form;
+        public DefinitionBuilder setForm(Form.Definition formDefinition) {
+            this.form = formDefinition.create();
             return this;
         }
         //        public DefinitionBuilder setType(String type) {

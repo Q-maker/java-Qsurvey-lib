@@ -154,7 +154,7 @@ public class Repository implements JSONable, IconItem {
     public static class Definition {
 
         String name, description, iconUri, uri, grandType;
-        Form identityForm = new Form();
+        Form.Definition identityFormDefinition = new Form.Definition();
 
         public Definition setDescription(String description) {
             this.description = description;
@@ -182,19 +182,19 @@ public class Repository implements JSONable, IconItem {
         }
 
         public HashMap<String, Form.Field> setIdentity(HashMap<String, String> identity) {
-            this.identityForm.clear();
+            this.identityFormDefinition.clear();
             if (identity != null) {
-                return this.identityForm.putAll(identity);
+                return this.identityFormDefinition.putAll(identity);
             }
             return null;
         }
 
         public Form.Field putIdentity(String name, String value) {
-            return this.identityForm.put(name, value);
+            return this.identityFormDefinition.put(name, value);
         }
 
-        public Form getIdentityForm() {
-            return identityForm;
+        public Form.Definition getIdentityFormDefinition() {
+            return identityFormDefinition;
         }
 
         public Repository create() {
@@ -203,7 +203,7 @@ public class Repository implements JSONable, IconItem {
             repository.grandType = grandType;
             repository.uri = uri;
             repository.iconUri = iconUri;
-            repository.identityForm = identityForm;
+            repository.identityForm = identityFormDefinition.create();
             repository.description = description;
             return repository;
         }

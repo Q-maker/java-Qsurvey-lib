@@ -21,7 +21,7 @@ public class Form {
         this(null);
     }
 
-    public Form(HashMap<String, Field> fieldMap) {
+    public <T extends Field> Form(HashMap<String, T> fieldMap) {
         if (fieldMap != null) {
             this.fieldMap.putAll(fieldMap);
         }
@@ -75,36 +75,76 @@ public class Form {
         return result;
     }
 
-    public static class Definition extends Form {
-        public Field put(String name, String inputType, String pattern, String validationErrorMessage) {
+    public static class Definition {
+        final HashMap<String, FieldDefinition> fieldMap = new HashMap();
+
+        public FieldDefinition put(String name, Object value) {
+            return put(name, Field.INPUT_TYPE_TEXT, value, null, null);
+        }
+
+        public FieldDefinition put(String name, Object value, String pattern, String validationErrorMessage) {
+            return put(name, Field.INPUT_TYPE_TEXT, value, pattern, validationErrorMessage);
+        }
+
+        public FieldDefinition put(String name, String inputType, String pattern, String validationErrorMessage) {
             return put(name, inputType, "", pattern, validationErrorMessage);
         }
 
-        public Field put(String name, String inputType, Object value, String pattern, String validationErrorMessage) {
+        public FieldDefinition put(String name, String inputType, Object value, String pattern, String validationErrorMessage) throws PatternMatchError {
             FieldDefinition field = new FieldDefinition(name);
             field.setValue(value);
             field.setInputType(inputType);
             field.appendValidator(pattern, validationErrorMessage);
+            if (!TextUtils.isEmpty(pattern) && !TextUtils.isEmpty(value) && !value.toString().matches(pattern)) {
+                throw new PatternMatchError(field, pattern, validationErrorMessage);
+            }
             fieldMap.put(name, field);
             return field;
         }
 
         public Field put(Field field) {
             if (field != null) {
-                return this.fieldMap.put(field.getName(), field);
+                return this.fieldMap.put(field.getName(), new FieldDefinition(field));
             }
             return null;
         }
 
-        public Field put(FieldDefinition field) {
+        public FieldDefinition put(FieldDefinition field) {
             if (field != null) {
                 return this.fieldMap.put(field.getName(), field);
             }
             return null;
         }
+
+        public Form create() {
+            return new Form(fieldMap);
+        }
+
+        public void clear() {
+            fieldMap.clear();
+        }
+
+        public <T> HashMap<String, Field> putAll(HashMap<String, T> nameValue) throws IllegalArgumentException {
+            HashMap<String, Field> result = new HashMap();
+            for (Map.Entry<String, T> entry : nameValue.entrySet()) {
+                result.put(entry.getKey(), put(entry.getKey(), entry.getValue()));
+            }
+            return result;
+        }
     }
 
     public static class FieldDefinition extends Field {
+
+        public FieldDefinition() {
+
+        }
+
+        public FieldDefinition(Field field) {
+            this.name = field.name;
+            this.masked = field.masked;
+            this.inputType = field.inputType;
+            this.value = field.value;
+        }
 
         public FieldDefinition(String name) {
             super(name);

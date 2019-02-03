@@ -34,10 +34,12 @@ public class ExampleUnitTest {
     @Test
     public void formTest() throws Exception {
         try {
-            Form.Definition form = new Form.Definition();
-            form.put("username", Form.Field.INPUT_TYPE_TEXT, "hello", ".{4,}");
-            form.put("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
-            form.put("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
+            Form.Definition definition = new Form.Definition();
+            definition.put("username", Form.Field.INPUT_TYPE_TEXT, ".{4,}", "doit contenir au moins 4 caractère");
+            definition.put("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
+            definition.put("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
+            Form form = definition.create();
+//            form.put("username", "")
             form.checkUp();
         } catch (Form.Error e) {
             e.printStackTrace();
