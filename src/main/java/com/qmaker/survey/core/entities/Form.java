@@ -14,7 +14,7 @@ import istat.android.base.tools.TextUtils;
 import istat.android.base.utils.ListLinkedHashMap;
 
 public class Form {
-
+    boolean allowDynamicFields = true;
     final HashMap<String, Field> fieldMap = new HashMap();
 
     public Form() {
@@ -25,6 +25,10 @@ public class Form {
         if (fieldMap != null) {
             this.fieldMap.putAll(fieldMap);
         }
+    }
+
+    public boolean isAllowDynamicFields() {
+        return allowDynamicFields;
     }
 
     public void clear() {
@@ -62,6 +66,13 @@ public class Form {
 
     public Field put(String name, Object value) throws IllegalArgumentException {
         Field field = getField(name);
+        if (field == null && allowDynamicFields) {
+            field = new Field(name);
+            fieldMap.put(name, field);
+        }
+        if (field == null) {
+            throw new IllegalArgumentException("Field with name='" + name + "' is not defined as current allowed Form field.");
+        }
         field.setValue(value);
         return field;
     }
@@ -76,33 +87,53 @@ public class Form {
     }
 
     public static class Definition {
+        boolean allowDynamicFields = true;
         final HashMap<String, FieldDefinition> fieldMap = new HashMap();
 
-        public FieldDefinition put(String name, Object value) {
-            return put(name, Field.INPUT_TYPE_TEXT, value, null, null);
+        public void setAllowDynamicFields(boolean allowDynamicFields) {
+            this.allowDynamicFields = allowDynamicFields;
         }
 
-        public FieldDefinition put(String name, Object value, String pattern, String validationErrorMessage) {
-            return put(name, Field.INPUT_TYPE_TEXT, value, pattern, validationErrorMessage);
+        public FieldDefinition put(String name, Object value) throws PatternMatchError {
+            return put(name, Field.INPUT_TYPE_TEXT, value);
         }
 
-        public FieldDefinition put(String name, String inputType, String pattern, String validationErrorMessage) {
-            return put(name, inputType, "", pattern, validationErrorMessage);
+        public FieldDefinition put(String name, String inputType) throws PatternMatchError {
+            return put(name, inputType, "");
         }
 
-        public FieldDefinition put(String name, String inputType, Object value, String pattern, String validationErrorMessage) throws PatternMatchError {
-            FieldDefinition field = new FieldDefinition(name);
+        public FieldDefinition put(String fieldName, String inputType, Object value) throws PatternMatchError {
+            FieldDefinition field = fieldMap.get(fieldName);
+            if (field == null) {
+                field = new FieldDefinition(fieldName);
+                fieldMap.put(fieldName, field);
+            }
             field.setValue(value);
             field.setInputType(inputType);
-            field.appendValidator(pattern, validationErrorMessage);
-            if (!TextUtils.isEmpty(pattern) && !TextUtils.isEmpty(value) && !value.toString().matches(pattern)) {
-                throw new PatternMatchError(field, pattern, validationErrorMessage);
+            for (Map.Entry<String, String> entry : field.patternErrorMessageMap.entrySet()) {
+                if (!TextUtils.isEmpty(entry.getKey()) && !TextUtils.isEmpty(value) && !value.toString().matches(entry.getKey())) {
+                    throw new PatternMatchError(field, entry.getKey(), entry.getValue());
+                }
             }
-            fieldMap.put(name, field);
+            fieldMap.put(fieldName, field);
             return field;
         }
 
-        public Field put(Field field) {
+        public FieldDefinition putFieldValidator(String fieldName, String pattern, String validationErrorMessage) throws PatternMatchError {
+            FieldDefinition field = fieldMap.get(fieldName);
+            if (field == null) {
+                field = new FieldDefinition(fieldName);
+                fieldMap.put(fieldName, field);
+            }
+            field.putValidator(pattern, validationErrorMessage);
+            if (!TextUtils.isEmpty(pattern) && !TextUtils.isEmpty(field.getValue()) && !field.getValue().toString().matches(pattern)) {
+                throw new PatternMatchError(field, pattern, validationErrorMessage);
+            }
+            fieldMap.put(fieldName, field);
+            return field;
+        }
+
+        public FieldDefinition put(Field field) {
             if (field != null) {
                 return this.fieldMap.put(field.getName(), new FieldDefinition(field));
             }
@@ -117,7 +148,9 @@ public class Form {
         }
 
         public Form create() {
-            return new Form(fieldMap);
+            Form form = new Form(fieldMap);
+            form.allowDynamicFields = allowDynamicFields;
+            return form;
         }
 
         public void clear() {
@@ -162,7 +195,7 @@ public class Form {
             this.inputType = inputType;
         }
 
-        public Field appendValidator(String pattern, String errorMessage) {
+        public Field putValidator(String pattern, String errorMessage) {
             patternErrorMessageMap.put(pattern, errorMessage);
             return this;
         }
@@ -178,7 +211,7 @@ public class Form {
         String inputType;
         Object value;
         boolean masked;
-        final Map<String, String> patternErrorMessageMap = new LinkedHashMap<>();
+        protected final Map<String, String> patternErrorMessageMap = new LinkedHashMap<>();
 
         public Field(String name) {
             this.name = name;

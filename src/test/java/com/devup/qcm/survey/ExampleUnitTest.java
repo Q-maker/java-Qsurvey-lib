@@ -35,13 +35,17 @@ public class ExampleUnitTest {
     public void formTest() throws Exception {
         try {
             Form.Definition definition = new Form.Definition();
-            definition.put("username", Form.Field.INPUT_TYPE_TEXT, ".{4,}", "doit contenir au moins 4 caractère");
-            definition.put("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
-            definition.put("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
+            definition.putFieldValidator("username", ".{4,}", "doit contenir au moins 4 caractère");
+            definition.putFieldValidator("password", ".{8,}", "doit contenir au moins 8 caractère");
+            definition.putFieldValidator("name", ".{1,}", "ne doit pas être vide");
+            definition.setAllowDynamicFields(false);
             Form form = definition.create();
-//            form.put("username", "")
+            form.put("username", "Papa");
+            form.put("name", "Toukea tatsi J");
+            form.put("password", "admin");
+            form.put("gender", "femal");
             form.checkUp();
-        } catch (Form.Error e) {
+        } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
         }
