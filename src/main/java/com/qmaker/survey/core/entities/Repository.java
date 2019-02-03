@@ -23,7 +23,7 @@ public class Repository implements JSONable, IconItem {
 
     public Form.Field putIdentity(String name, String value) {
         if (identityForm != null) {
-            return identityForm.putField(name, value);
+            return identityForm.put(name, value);
         }
         return null;
     }
@@ -184,13 +184,13 @@ public class Repository implements JSONable, IconItem {
         public HashMap<String, Form.Field> setIdentity(HashMap<String, String> identity) {
             this.identityForm.clear();
             if (identity != null) {
-                return this.identityForm.putFields(identity);
+                return this.identityForm.putAll(identity);
             }
             return null;
         }
 
         public Form.Field putIdentity(String name, String value) {
-            return this.identityForm.putField(name, value);
+            return this.identityForm.put(name, value);
         }
 
         public Form getIdentityForm() {

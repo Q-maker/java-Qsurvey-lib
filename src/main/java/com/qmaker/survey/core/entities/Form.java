@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import istat.android.base.tools.TextUtils;
+import istat.android.base.utils.ListLinkedHashMap;
 
 public class Form {
 
@@ -30,7 +31,7 @@ public class Form {
         fieldMap.clear();
     }
 
-    public Field removeField(String fieldName) {
+    public Field remove(String fieldName) {
         return fieldMap.remove(fieldName);
     }
 
@@ -51,52 +52,56 @@ public class Form {
         return result;
     }
 
-    public boolean isFieldDefined(String name) {
+    public boolean isDefined(String name) {
         return this.fieldMap.containsKey(name);
     }
 
-    public boolean hasMandatoryField() {
-        List<Field> fields = getFields();
-        for (Field field : fields) {
-            if (field.isMandatory()) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isEmpty(String name) {
+        return !TextUtils.isEmpty(fieldMap.get(name));
     }
 
-    public Field putField(String name, Object value) {
-        return putField(name, null, value, null, null);
-    }
-
-    public Field putField(String name, String inputType, Object value, String pattern, String validationErrorMessage) {
-        FieldDefinition field = new FieldDefinition(name);
-        field.setInputType(inputType);
-        field.appendValidator(pattern, validationErrorMessage);
-        fieldMap.put(name, field);
+    public Field put(String name, Object value) throws IllegalArgumentException {
+        Field field = getField(name);
+        field.setValue(value);
         return field;
     }
 
-    public Field put(Field field) {
-        if (field != null) {
-            return this.fieldMap.put(field.getName(), field);
-        }
-        return null;
-    }
 
-    public Field put(FieldDefinition field) {
-        if (field != null) {
-            return this.fieldMap.put(field.getName(), field);
-        }
-        return null;
-    }
-
-    public <T> HashMap<String, Field> putFields(HashMap<String, T> identity) {
+    public <T> HashMap<String, Field> putAll(HashMap<String, T> nameValue) throws IllegalArgumentException {
         HashMap<String, Field> result = new HashMap();
-        for (Map.Entry<String, T> entry : identity.entrySet()) {
-            result.put(entry.getKey(), putField(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, T> entry : nameValue.entrySet()) {
+            result.put(entry.getKey(), put(entry.getKey(), entry.getValue()));
         }
         return result;
+    }
+
+    public static class Definition extends Form {
+        public Field put(String name, String inputType, String pattern, String validationErrorMessage) {
+            return put(name, inputType, "", pattern, validationErrorMessage);
+        }
+
+        public Field put(String name, String inputType, Object value, String pattern, String validationErrorMessage) {
+            FieldDefinition field = new FieldDefinition(name);
+            field.setValue(value);
+            field.setInputType(inputType);
+            field.appendValidator(pattern, validationErrorMessage);
+            fieldMap.put(name, field);
+            return field;
+        }
+
+        public Field put(Field field) {
+            if (field != null) {
+                return this.fieldMap.put(field.getName(), field);
+            }
+            return null;
+        }
+
+        public Field put(FieldDefinition field) {
+            if (field != null) {
+                return this.fieldMap.put(field.getName(), field);
+            }
+            return null;
+        }
     }
 
     public static class FieldDefinition extends Field {
@@ -107,10 +112,6 @@ public class Form {
 
         public void setName(String name) {
             this.name = name;
-        }
-
-        public void setMandatory(boolean mandatory) {
-            this.mandatory = mandatory;
         }
 
         public void setMasked(boolean masked) {
@@ -128,9 +129,6 @@ public class Form {
     }
 
     public static class Field {
-        public final static int ERROR_TYPE_NONE = 0,
-                ERROR_TYPE_EMPTY_CONTENT = 0x00000001,
-                ERROR_TYPE_CONTENT_NOT_MATCH = 0x00000010;
         public final static String
                 INPUT_TYPE_TEXT = "text",
                 INPUT_TYPE_NUMBER = "number",
@@ -139,7 +137,7 @@ public class Form {
         String name;
         String inputType;
         Object value;
-        boolean mandatory, masked;
+        boolean masked;
         final Map<String, String> patternErrorMessageMap = new LinkedHashMap<>();
 
         public Field(String name) {
@@ -151,19 +149,14 @@ public class Form {
         }
 
 
-        public int checkup() {
-            int out = ERROR_TYPE_NONE;
-            if ((value == null || TextUtils.isEmpty(value.toString())) && mandatory) {
-                out |= ERROR_TYPE_EMPTY_CONTENT;
+        public List<PatternMatchError> checkup() {
+            List<PatternMatchError> out = new ArrayList<>();
+            for (Map.Entry<String, String> entry : patternErrorMessageMap.entrySet()) {
+                if (!getValueString("").matches(entry.getKey())) {
+                    out.add(new PatternMatchError(this, entry.getKey(), entry.getValue()));
+                }
             }
-//            if (value != null && value.toString().matches(pattern)) {
-//                out |= ERROR_TYPE_CONTENT_NOT_MATCH;
-//            }
             return out;
-        }
-
-        public boolean isMandatory() {
-            return mandatory;
         }
 
         public boolean isMasked() {
@@ -308,33 +301,76 @@ public class Form {
         }
     }
 
-    public CheckResult checkUp() {
-        return new CheckResult(this);
+    public void checkUp() throws Error {
+        List<Field> fields = getFields();
+        ListLinkedHashMap<Field, PatternMatchError> errorMap = new ListLinkedHashMap<>();
+        List<PatternMatchError> errors;
+        for (Field field : fields) {
+            errors = field.checkup();
+            if (errors != null && !errors.isEmpty()) {
+                errorMap.put(field, errors);
+            }
+        }
+        if (!errorMap.isEmpty()) {
+            throw new Error(errorMap);
+        }
     }
 
-    public class CheckResult {
-        HashMap<Field, Integer> errorsMap = new HashMap();
+    public static class PatternMatchError extends IllegalArgumentException {
+        Field field;
+        String pattern;
 
-        public CheckResult(Form form) {
-            for (Field field : form.getFields()) {
-                errorsMap.put(field, field.checkup());
+        public PatternMatchError(Field field, String pattern, String message) {
+            super(message);
+            this.pattern = pattern;
+            this.field = field;
+        }
+
+        public Field getField() {
+            return field;
+        }
+
+        public String getPattern() {
+            return pattern;
+        }
+    }
+
+    public static class Error extends Exception {
+        ListLinkedHashMap<Field, PatternMatchError> fieldErrorMap = new ListLinkedHashMap<>();
+        HashMap<String, Field> nameFieldMap = new HashMap<>();
+
+        public Error(List<PatternMatchError> errors) {
+            for (PatternMatchError patternMatchError : errors) {
+                fieldErrorMap.append(patternMatchError.getField(), patternMatchError);
             }
         }
 
-        public boolean hasError(String fieldName, int error) {
-            return (errorsMap.get(fieldName) & error) == errorsMap.get(fieldName);
+        public Error(ListLinkedHashMap<Field, PatternMatchError> errorMap) {
+            this.fieldErrorMap = errorMap;
         }
 
-        public int getFieldError(String fieldName) {
-            return errorsMap.get(fieldName);
+        public List<Field> getErrorFields() {
+            return new ArrayList<>(fieldErrorMap.keySet());
         }
 
-        public List<Field> getWrongFields() {
-            return new ArrayList(errorsMap.keySet());
+        public List<PatternMatchError> getFieldErrors(String fieldName) {
+            Field field = nameFieldMap.get(fieldName);
+            if (field != null) {
+                return getFieldErrors(field);
+            }
+            List<PatternMatchError> out = new ArrayList<>();
+            for (Map.Entry<Field, List<PatternMatchError>> entry : fieldErrorMap.entrySet()) {
+                nameFieldMap.put(entry.getKey().getName(), entry.getKey());
+                if (field.getName().equals(fieldName)) {
+                    out = entry.getValue();
+                }
+            }
+            return out;
         }
 
-        public boolean hasErrors() {
-            return !errorsMap.isEmpty();
+        public List<PatternMatchError> getFieldErrors(Field field) {
+            return fieldErrorMap.get(field);
         }
+
     }
 }

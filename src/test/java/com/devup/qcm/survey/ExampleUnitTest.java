@@ -32,15 +32,17 @@ public class ExampleUnitTest {
     }
 
     @Test
-    public void formTest() {
-        assertEquals(4, 2 + 2);
-        Form form = new Form();
-        form.putField("username", Form.Field.INPUT_TYPE_TEXT, "hello", ".{4,}");
-        form.putField("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
-        form.putField("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
-        Form.CheckResult result = form.checkUp();
-        boolean error = result.hasErrors();
-        assertTrue(!error);
+    public void formTest() throws Exception {
+        try {
+            Form.Definition form = new Form.Definition();
+            form.put("username", Form.Field.INPUT_TYPE_TEXT, "hello", ".{4,}");
+            form.put("password", Form.Field.INPUT_TYPE_TEXT, "istat-youth2", ".{8,}");
+            form.put("name", Form.Field.INPUT_TYPE_TEXT, "Toukéa Tatsi", null);
+            form.checkUp();
+        } catch (Form.Error e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
     }
 
     @Test
