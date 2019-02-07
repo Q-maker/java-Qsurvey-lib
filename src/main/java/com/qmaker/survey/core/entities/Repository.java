@@ -4,9 +4,11 @@ import com.qmaker.core.interfaces.IconItem;
 import com.qmaker.core.interfaces.JSONable;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class Repository implements JSONable, IconItem {
     public final static String GRAND_TYPE_WSSE = "wsse", GRAND_TYPE_JWT = "jwt";
@@ -33,15 +35,24 @@ public class Repository implements JSONable, IconItem {
     }
 
     public String getIdentity(String name) {
-        return getIdentities().get(name);
+        Form.Field field = identityForm.getField(name);
+        if (field == null) {
+            return null;
+        }
+        return field.getValueString("");
     }
 
-    public HashMap<String, String> getIdentities() {
-        HashMap<String, String> result = new HashMap();
-        for (Form.Field field : identityForm.getFields()) {
-            result.put(field.getName(), field.getValueString());
-        }
-        return result;
+    public HashMap<String, Object> getIdentityMap() {
+//        HashMap<String, String> result = new HashMap();
+//        for (Form.Field field : identityForm.getFields()) {
+//            result.put(field.getName(), field.getValueString());
+//        }
+//        return result;
+        return getIdentities().getContentMap();
+    }
+
+    public Form getIdentities() {
+        return identityForm;
     }
 
     public String getGrandType() {
@@ -49,7 +60,12 @@ public class Repository implements JSONable, IconItem {
     }
 
     public String getUri() {
-        return uri;
+        List<Form.Field> fields = identityForm.getFields();
+        String out = uri;
+        for (Form.Field field : fields) {
+            out = uri.replace("{" + field.getName() + "}", field.getValueString());
+        }
+        return out;
     }
 
     /*
@@ -79,25 +95,35 @@ public class Repository implements JSONable, IconItem {
 
     @Override
     public String toString() {
-        return toJson().toString();
+        return new Gson().toJson(this);
     }
 
     @Override
     public JSONObject toJson() {
         try {
-            JSONObject json = new JSONObject();
-            json.put(FIELD_GRAND_TYPE, grandType);
-            JSONObject jsonIdentity = new JSONObject();
-            Gson gson = new Gson();
-            JSONObject jsonIdentityContent = new JSONObject(gson.toJson(getIdentities()));
-            jsonIdentity.put(grandType.equals(GRAND_TYPE_HTTP_BASIC) ? FIELD_IDENTITY_USER : FIELD_IDENTITY_TOKEN, jsonIdentityContent);
-            json.put(FIELD_IDENTITY, jsonIdentity);
-            return json;
-        } catch (Exception e) {
+            return new JSONObject(toString());
+        } catch (JSONException e) {
             e.printStackTrace();
             return new JSONObject();
         }
     }
+
+    //    @Override
+//    public JSONObject toJson() {
+//        try {
+//            JSONObject json = new JSONObject();
+//            json.put(FIELD_GRAND_TYPE, grandType);
+//            JSONObject jsonIdentity = new JSONObject();
+//            Gson gson = new Gson();
+//            JSONObject jsonIdentityContent = new JSONObject(gson.toJson(getIdentities()));
+//            jsonIdentity.put(grandType.equals(GRAND_TYPE_HTTP_BASIC) ? FIELD_IDENTITY_USER : FIELD_IDENTITY_TOKEN, jsonIdentityContent);
+//            json.put(FIELD_IDENTITY, jsonIdentity);
+//            return json;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new JSONObject();
+//        }
+//    }
 
 //    public static Repository fromHttpBasic(String username, String password) {
 //        Repository auth = new Repository();
@@ -189,8 +215,21 @@ public class Repository implements JSONable, IconItem {
             return null;
         }
 
+        public Definition setIdentity(Form form) {
+            this.identityFormDefinition = new Form.Definition(form);
+            return this;
+        }
+
         public Form.Field putIdentity(String name, String value) {
-            return this.identityFormDefinition.put(name, value);
+            return this.identityFormDefinition.put(value, name);
+        }
+
+        public Form.Field putIdentity(String name, String label, String inputType) {
+            return this.identityFormDefinition.put(name, label, inputType);
+        }
+
+        public Form.Field putIdentity(String name, String label, String inputType, Object value) {
+            return this.identityFormDefinition.put(name, label, inputType, value);
         }
 
         public Form.Definition getIdentityFormDefinition() {
@@ -206,6 +245,14 @@ public class Repository implements JSONable, IconItem {
             repository.identityForm = identityFormDefinition.create();
             repository.description = description;
             return repository;
+        }
+
+        public void putIdentity(Form form) {
+            this.identityFormDefinition = new Form.Definition(form);
+        }
+
+        public void putIdentity(Form.Definition definition) {
+            this.identityFormDefinition = new Form.Definition(definition);
         }
     }
 }

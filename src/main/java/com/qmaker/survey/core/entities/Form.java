@@ -90,26 +90,54 @@ public class Form {
         boolean allowDynamicFields = true;
         final HashMap<String, FieldDefinition> fieldMap = new HashMap();
 
+        public Definition() {
+
+        }
+
+        public Definition(Form form) {
+            this(form.getFields());
+        }
+
+        public Definition(Form.Definition definition) {
+            this.allowDynamicFields = definition.allowDynamicFields;
+            this.fieldMap.putAll(definition.fieldMap);
+        }
+
+        public <T extends Field> Definition(List<T> fields) {
+            putAll(fields);
+        }
+
+        public <T extends Field> Definition putAll(List<T> fields) {
+            for (Field field : fields) {
+                put(field);
+            }
+            return this;
+        }
+
         public void setAllowDynamicFields(boolean allowDynamicFields) {
             this.allowDynamicFields = allowDynamicFields;
         }
 
-        public FieldDefinition put(String name, Object value) throws PatternMatchError {
-            return put(name, Field.INPUT_TYPE_TEXT, value);
+        public FieldDefinition put(String fieldName, String label) throws PatternMatchError {
+            return put(fieldName, label, Field.INPUT_TYPE_TEXT, "");
         }
 
-        public FieldDefinition put(String name, String inputType) throws PatternMatchError {
-            return put(name, inputType, "");
+        public FieldDefinition put(String fieldName, String label, Object value) throws PatternMatchError {
+            return put(fieldName, label, Field.INPUT_TYPE_TEXT, value);
         }
 
-        public FieldDefinition put(String fieldName, String inputType, Object value) throws PatternMatchError {
+        public FieldDefinition put(String fieldName, String label, String inputType) throws PatternMatchError {
+            return put(fieldName, label, inputType, "");
+        }
+
+        public FieldDefinition put(String fieldName, String label, String inputType, Object value) throws PatternMatchError {
             FieldDefinition field = fieldMap.get(fieldName);
             if (field == null) {
-                field = new FieldDefinition(fieldName);
+                field = new FieldDefinition(label, fieldName);
                 fieldMap.put(fieldName, field);
             }
             field.setValue(value);
-            field.setInputType(inputType);
+            field.setInputType(inputType != null ? inputType : Field.INPUT_TYPE_TEXT);
             for (Map.Entry<String, String> entry : field.patternErrorMessageMap.entrySet()) {
                 if (!TextUtils.isEmpty(entry.getKey()) && !TextUtils.isEmpty(value) && !value.toString().matches(entry.getKey())) {
                     throw new PatternMatchError(field, entry.getKey(), entry.getValue());
@@ -160,7 +188,7 @@ public class Form {
         public <T> HashMap<String, Field> putAll(HashMap<String, T> nameValue) throws IllegalArgumentException {
             HashMap<String, Field> result = new HashMap();
             for (Map.Entry<String, T> entry : nameValue.entrySet()) {
-                result.put(entry.getKey(), put(entry.getKey(), entry.getValue()));
+                result.put(entry.getKey(), put(entry.getKey(), null, entry.getValue()));
             }
             return result;
         }
@@ -179,12 +207,21 @@ public class Form {
             this.value = field.value;
         }
 
+        public FieldDefinition(String label, String name) {
+            super(name);
+            this.label = label;
+        }
+
         public FieldDefinition(String name) {
             super(name);
         }
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
         }
 
         public void setMasked(boolean masked) {
@@ -207,13 +244,13 @@ public class Form {
                 INPUT_TYPE_NUMBER = "number",
                 INPUT_TYPE_PHONE = "phone",
                 INPUT_TYPE_DATE = "date";
-        String name;
+        String name, label;
         String inputType;
         Object value;
         boolean masked;
         protected final Map<String, String> patternErrorMessageMap = new LinkedHashMap<>();
 
-        public Field(String name) {
+        Field(String name) {
             this.name = name;
         }
 
@@ -251,6 +288,10 @@ public class Form {
 
         public <T> T getValue() {
             return (T) value;
+        }
+
+        public String getLabel() {
+            return label;
         }
 
         public String getValueString() {

@@ -35,6 +35,8 @@ public class ExampleUnitTest {
     public void formTest() throws Exception {
         try {
             Form.Definition definition = new Form.Definition();
+            definition.put("username", "Nom utilisateur", Form.Field.INPUT_TYPE_TEXT);
+            definition.put("password", "Mot de passe", Form.Field.INPUT_TYPE_TEXT);
             definition.putFieldValidator("username", ".{4,}", "doit contenir au moins 4 caractère");
             definition.putFieldValidator("password", ".{8,}", "doit contenir au moins 8 caractère");
             definition.putFieldValidator("name", ".{1,}", "ne doit pas être vide");
@@ -45,6 +47,34 @@ public class ExampleUnitTest {
             form.put("password", "admin");
             form.put("gender", "femal");
             form.checkUp();
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void repositoryUriTest() throws Exception {
+        try {
+            Form.Definition definition = new Form.Definition();
+            definition.put("username", "Nom utilisateur", Form.Field.INPUT_TYPE_TEXT);
+            definition.put("password", "Mot de passe", Form.Field.INPUT_TYPE_TEXT);
+            definition.putFieldValidator("username", ".{4,}", "doit contenir au moins 4 caractère");
+            definition.putFieldValidator("password", ".{8,}", "doit contenir au moins 8 caractère");
+            definition.putFieldValidator("name", ".{1,}", "ne doit pas être vide");
+            definition.setAllowDynamicFields(true);
+            Form form = definition.create();
+            form.put("username", "Papa");
+            form.put("name", "Toukea tatsi J");
+            form.put("password", "papaetmamanvontalecole");
+            form.put("gender", "femal");
+            form.checkUp();
+            Repository.Definition repoDefinition = new Repository.Definition();
+            repoDefinition.putIdentity(form);
+            repoDefinition.setUri("http://quizbucket/{username}/bucket/");
+            Repository repository = repoDefinition.create();
+            String repoUri = repository.getUri();
+            assertEquals(repoUri, "http://quizbucket/"+form.getField("username").getValueString()+"/bucket/");
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
