@@ -50,6 +50,8 @@ public class Mockups {
             MemoryIoInterface ioi = new MemoryIoInterface();
             QSystem system = new QSystem(ioi);
             QPackage project = MockUps.qPackage7(system, fileUri);
+            project.getQuestionnaire().setId("survey-demo-bloking");
+            project.getQuestionnaire().setTitle("Survey-demo-bloking");
             List<Qcm> qcms = project.getQuestionnaire().getQcms();
             Random random = new Random();
             for (Qcm qcm : qcms) {
@@ -63,7 +65,7 @@ public class Mockups {
             builder.setBlockingPublisherAllowed(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"));
+                    .appendRepository(mockUpRepository("campaign_0"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);

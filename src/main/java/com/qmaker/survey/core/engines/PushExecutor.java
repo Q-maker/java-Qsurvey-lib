@@ -480,6 +480,18 @@ public final class PushExecutor {
             }
         }
 
+        public boolean isSuccess() {
+            return getError() == null && getFailCause() == null && getState() == PushProcess.STATE_SUCCESS;
+        }
+
+        public boolean isFiled() {
+            return getFailCause() == null || getState() == PushProcess.STATE_FAILED;
+        }
+
+        public boolean hasError() {
+            return getError() == null || getState() == PushProcess.STATE_ERROR;
+        }
+
         public void notifyCanNotProceed() {
             order.setState(PushOrder.STATE_DROPPED);
         }

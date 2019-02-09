@@ -60,12 +60,13 @@ public class Repository implements JSONable, IconItem {
     }
 
     public String getUri() {
-        List<Form.Field> fields = identityForm.getFields();
-        String out = uri;
-        for (Form.Field field : fields) {
-            out = uri.replace("{" + field.getName() + "}", field.getValueString());
-        }
-        return out;
+//        List<Form.Field> fields = identityForm.getFields();
+//        String out = uri;
+//        for (Form.Field field : fields) {
+//            out = uri.replace("{" + field.getName() + "}", field.getValueString());
+//        }
+//        return out;
+        return uri;
     }
 
     /*
@@ -164,7 +165,7 @@ public class Repository implements JSONable, IconItem {
     }
 
     @Override
-    public CharSequence getTitle() {
+    public String getTitle() {
         return name + ":" + uri + ":" + grandType;
     }
 
@@ -173,7 +174,7 @@ public class Repository implements JSONable, IconItem {
     }
 
     @Override
-    public CharSequence getDescription() {
+    public String getDescription() {
         return description;
     }
 

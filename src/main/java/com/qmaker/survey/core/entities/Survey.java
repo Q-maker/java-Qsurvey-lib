@@ -18,14 +18,14 @@ import java.util.Collections;
 import java.util.List;
 
 import istat.android.base.tools.TextUtils;
-
+//TODO determiner la pertinance de proposer une configuration qui demande de spécifier l'auteur [avec certain champs requis] de la survey.
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
 public class Survey {
 
     //    public final static String TYPE_ANONYMOUS = "anonymous",
 //            TYPE_ASYNCHONOUS = "asynchronous",
 //            TYPE_SYNCHRONOUS = "synchronous";
-    final static String NAMESPACE = "survey";
+    public final static String NAMESPACE = "survey";
     Component component;
     public static String
             FIELD_ID = "id",
@@ -148,9 +148,13 @@ public class Survey {
         }
     }
 
+    public String getQuestionnaireId() {
+        return getQuestionnaireSummary().getId();
+    }
+
     public Repository getRepository(int index) {
         List<Repository> repositories = getRepositories();
-        return repositories != null && repositories.size() < index ? repositories.get(index) : null;
+        return repositories != null && repositories.size() > index ? repositories.get(index) : null;
     }
 
     public String getProcessingMessage() {
@@ -177,6 +181,10 @@ public class Survey {
         public InvalidSurveyException(QPackage qPackage) {
             super("This qpackage doesn't content any Survey component." + (qPackage != null ? " uri" + qPackage.getUriString() : ""));
         }
+    }
+
+    public static String getPropertyNameFor(String name) {
+        return Component.getPropertyNameFor(NAMESPACE, name);
     }
 
     public static class DefinitionBuilder {
