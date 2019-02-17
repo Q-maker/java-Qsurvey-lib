@@ -4,6 +4,7 @@ import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.engines.QSystem;
 import com.qmaker.core.engines.Qmaker;
+import com.qmaker.core.entities.Author;
 import com.qmaker.core.entities.Qcm;
 import com.qmaker.core.io.QPackage;
 import com.qmaker.core.io.QProject;
@@ -22,17 +23,20 @@ public class Mockups {
         try {
             final String defaultMessage = "Votre feuille de copie a été envoyé avec success";
             final String processingMessage = "Patientez svp...";
-            String fileUri = "mockup:///home/istat/Temp/qsurvey-test/";
+            String fileUri = "mockup:///home/istat/Temp/qsurvey-test-async/";
             MemoryIoInterface ioi = new MemoryIoInterface();
             QSystem system = new QSystem(ioi);
             QPackage project = MockUps.qPackage7(system, fileUri);
+            project.getQuestionnaire().setId("survey-demo-asynchron");
+            project.getQuestionnaire().setTitle("Survey-demo-asynchron");
+            project.getQuestionnaire().setAuthor(author());
             ioi.append(project);
             ComponentManager manager = ComponentManager.getInstance();
             Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
             builder//.setType(Survey.TYPE_ANONYMOUS)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"));
+                    .appendRepository(mockUpRepository("simple_push_campaign"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -46,12 +50,13 @@ public class Mockups {
         try {
             final String defaultMessage = "Votre feuille de copie a été envoyé avec success";
             final String processingMessage = "Patientez svp...";
-            String fileUri = "mockup:///home/istat/Temp/qsurvey-test/";
+            String fileUri = "mockup:///home/istat/Temp/qsurvey-test-blocking/";
             MemoryIoInterface ioi = new MemoryIoInterface();
             QSystem system = new QSystem(ioi);
             QPackage project = MockUps.qPackage7(system, fileUri);
             project.getQuestionnaire().setId("survey-demo-bloking");
             project.getQuestionnaire().setTitle("Survey-demo-bloking");
+            project.getQuestionnaire().setAuthor(author());
             List<Qcm> qcms = project.getQuestionnaire().getQcms();
             Random random = new Random();
             for (Qcm qcm : qcms) {
@@ -65,7 +70,7 @@ public class Mockups {
             builder.setBlockingPublisherAllowed(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("campaign_0"));
+                    .appendRepository(mockUpRepository("blocking_push_campaign"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -79,17 +84,48 @@ public class Mockups {
         try {
             final String defaultMessage = "Votre feuille de copie a été envoyé avec success";
             final String processingMessage = "Patientez svp...";
-            String fileUri = "mockup:///home/istat/Temp/qsurvey-test/";
+            String fileUri = "mockup:///home/istat/Temp/qsurvey-test-anonymous/";
             MemoryIoInterface ioi = new MemoryIoInterface();
             QSystem system = new QSystem(ioi);
             QPackage project = MockUps.qPackage7(system, fileUri);
+            project.getQuestionnaire().setId("survey-demo-anonymous");
+            project.getQuestionnaire().setTitle("Survey-demo-anonymous");
+            project.getQuestionnaire().setAuthor(author());
             ioi.append(project);
             ComponentManager manager = ComponentManager.getInstance();
             Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
             builder.setAnonymous(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("0"));
+                    .appendRepository(mockUpRepository("anonymous_push_campaign"));
+            Component.Definition def = builder.create();
+            manager.apply(def, project);
+            return Survey.from(project);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Survey anonymousSurvey2() {
+        try {
+            final String defaultMessage = "Votre feuille de copie a été envoyé avec success";
+            final String processingMessage = "Patientez svp...";
+            String fileUri = "mockup:///home/istat/Temp/qsurvey-test-anonymous2/";
+            MemoryIoInterface ioi = new MemoryIoInterface();
+            QSystem system = new QSystem(ioi);
+            QPackage project = MockUps.qPackage7(system, fileUri);
+            project.getQuestionnaire().setId("survey-demo-anonymous2");
+            project.getQuestionnaire().setTitle("Survey-demo-anonymous2");
+            project.getQuestionnaire().setAuthor(author());
+            ioi.append(project);
+            ComponentManager manager = ComponentManager.getInstance();
+            Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
+            builder.setAnonymous(true)
+                    .setDefaultCompletionMessage(defaultMessage)
+                    .setProcessingMessage(processingMessage)
+                    .appendRepository(mockUpRepository("anonymous2_push_campaign_0"))
+                    .appendRepository(mockUpRepository("anonymous2_push_campaign_1"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -106,10 +142,18 @@ public class Mockups {
 
     public static Repository mockUpRepository(String id) {
         Repository.Definition repository = new Repository.Definition();
+        repository.setName("QuizBucket");
         repository.setGrandType("firebase");
         repository.setUri("firebase://db/survey/collect/" + id);
         repository.putIdentity("username", "toukea" + id);
         repository.putIdentity("password", "istatyouth" + id);
         return repository.create();
+    }
+
+    private static Author author() {
+        Author author = new Author("id0", "Toukea Tatsi", "Jephté");
+        author.bibliography = "Ceci est la bibliographie de " + author.getDisplayName() + " qui explique qui il est.et ce qu'il fait.";
+        author.photoUri = "https://unsplash.it/200/200/?random&id_toukeatatsij";
+        return author;
     }
 }
