@@ -6,6 +6,7 @@ import com.qmaker.survey.core.utils.PayLoad;
 public interface SurveyStateListener {
     int STATE_PREPARED = 0x00000001,
             STATE_STARTED = 0x00000010,
+            STATE_PAUSED = 0x00000011,
             STATE_TIME_TICK = 0x00000100,
             STATE_EXERCISE_CHANGED = 0x00001000,
             STATE_TIME_OUT = 0x00010000,

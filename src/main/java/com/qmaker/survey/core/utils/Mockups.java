@@ -3,17 +3,14 @@ package com.qmaker.survey.core.utils;
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
 import com.qmaker.core.engines.QSystem;
-import com.qmaker.core.engines.Qmaker;
 import com.qmaker.core.entities.Author;
 import com.qmaker.core.entities.Qcm;
 import com.qmaker.core.io.QPackage;
-import com.qmaker.core.io.QProject;
 import com.qmaker.core.utils.MemoryIoInterface;
 import com.qmaker.core.utils.MockUps;
 import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -36,7 +33,7 @@ public class Mockups {
             builder//.setType(Survey.TYPE_ANONYMOUS)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("simple_push_campaign"));
+                    .appendRepository(mockUpFirebaseDbRepository("simple_push_campaign"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -57,6 +54,7 @@ public class Mockups {
             project.getQuestionnaire().setId("survey-demo-bloking");
             project.getQuestionnaire().setTitle("Survey-demo-bloking");
             project.getQuestionnaire().setAuthor(author());
+            project.getSummary().getSubject().setDescription("");
             List<Qcm> qcms = project.getQuestionnaire().getQcms();
             Random random = new Random();
             for (Qcm qcm : qcms) {
@@ -70,7 +68,7 @@ public class Mockups {
             builder.setBlockingPublisherAllowed(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("blocking_push_campaign"));
+                    .appendRepository(mockUpFirebaseDbRepository("blocking_push_campaign"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -97,7 +95,7 @@ public class Mockups {
             builder.setAnonymous(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("anonymous_push_campaign"));
+                    .appendRepository(mockUpFirebaseDbRepository("anonymous_push_campaign"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -124,8 +122,8 @@ public class Mockups {
             builder.setAnonymous(true)
                     .setDefaultCompletionMessage(defaultMessage)
                     .setProcessingMessage(processingMessage)
-                    .appendRepository(mockUpRepository("anonymous2_push_campaign_0"))
-                    .appendRepository(mockUpRepository("anonymous2_push_campaign_1"));
+                    .appendRepository(mockUpFirebaseDbRepository("anonymous2_push_campaign_0"))
+                    .appendRepository(mockUpFirebaseDbRepository("anonymous2_push_campaign_1"));
             Component.Definition def = builder.create();
             manager.apply(def, project);
             return Survey.from(project);
@@ -136,18 +134,22 @@ public class Mockups {
     }
 
 
-    public static Repository mockUpRepository() {
-        return mockUpRepository(Math.random() + "");
+    public static Repository mockUpFirebaseDbRepository() {
+        return mockUpFirebaseDbRepository(Math.random() + "");
     }
 
-    public static Repository mockUpRepository(String id) {
+    public static Repository mockUpRepository(String id, String grandType) {
         Repository.Definition repository = new Repository.Definition();
         repository.setName("QuizBucket");
-        repository.setGrandType("firebase");
+        repository.setGrandType(grandType);
         repository.setUri("firebase://db/survey/collect/" + id);
         repository.putIdentity("username", "toukea" + id);
         repository.putIdentity("password", "istatyouth" + id);
         return repository.create();
+    }
+
+    public static Repository mockUpFirebaseDbRepository(String id) {
+        return mockUpRepository(id, "firebase_db");
     }
 
     private static Author author() {
