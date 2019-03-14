@@ -155,6 +155,14 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     }
 
     @Override
+    public boolean onRunnerResume(QPackage qPackage, Test test) {
+        if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
+            dispatchSurveyStateChanged(SurveyStateListener.STATE_RESUME, runningSurvey, test);
+        }
+        return false;
+    }
+
+    @Override
     public boolean onRunCanceled(QPackage qPackage, Test test) {
         if (runningSurvey != null && runningSurvey.getQPackage().getUriString().equals(qPackage.getUriString())) {
             dispatchSurveyStateChanged(SurveyStateListener.STATE_CANCELED, runningSurvey, test);
