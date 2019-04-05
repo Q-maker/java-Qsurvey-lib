@@ -3,6 +3,7 @@ package com.qmaker.survey.core.entities;
 import com.google.gson.reflect.TypeToken;
 import com.qmaker.core.engines.Component;
 import com.qmaker.core.engines.ComponentManager;
+import com.qmaker.core.engines.QSystem;
 import com.qmaker.core.entities.CopySheet;
 import com.qmaker.core.entities.QSummary;
 import com.qmaker.core.entities.Questionnaire;
@@ -18,9 +19,10 @@ import java.util.Collections;
 import java.util.List;
 
 import istat.android.base.tools.TextUtils;
+
 //TODO determiner la pertinance de proposer une configuration qui demande de spécifier l'auteur [avec certain champs requis] de la survey.
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
-public class Survey {
+public class Survey implements QPackage {
 
     //    public final static String TYPE_ANONYMOUS = "anonymous",
 //            TYPE_ASYNCHONOUS = "asynchronous",
@@ -29,8 +31,8 @@ public class Survey {
     Component component;
     public static String
             FIELD_ID = "id",
-            FIELD_TYPE = "type",
-            FIELD_REPOSITORIES = "repositories",
+    //            FIELD_TYPE = "type",
+    FIELD_REPOSITORIES = "repositories",
             FIELD_DEFAULT_COMPLETION_MESSAGE = "default_completion_message",
             FIELD_PROCESSING_MESSAGE = "processing_message",
             FIELD_IS_ANONYMOUS = "anonymous",
@@ -62,9 +64,57 @@ public class Survey {
         return getQPackage().getSummary().getConfig();
     }
 
-    public Questionnaire getQuestionnaire() throws IOException {
-        return getQPackage().getQuestionnaire();
+
+    @Override
+    public QSummary getSummary() {
+        return component.getSummary();
     }
+
+    @Override
+    public Questionnaire getQuestionnaire() throws IOException {
+        return component.getQuestionnaire();
+    }
+
+    @Override
+    public Resource getResource() {
+        return component.getQPackage().getResource();
+    }
+
+    @Override
+    public String getUriString() {
+        return component.getQPackage().getUriString();
+    }
+
+    @Override
+    public String getType() {
+        return NAMESPACE;//component.getQPackage().getType();
+    }
+
+    @Override
+    public boolean exist() {
+        return component.getQPackage().exist();
+    }
+
+    @Override
+    public boolean delete() {
+        return component.getQPackage().delete();
+    }
+
+    @Override
+    public boolean rename(String newFileUri) {
+        return component.getQPackage().rename(newFileUri);
+    }
+
+    @Override
+    public String getName() {
+        return component.getQPackage().getName();
+    }
+
+    @Override
+    public QSystem getSystem() {
+        return component.getQPackage().getSystem();
+    }
+
     /*
       public boolean isBlockingPublisherNeeded() {
 //        return !isAnonymous() && isBLockingPublisherAllowed();
@@ -132,9 +182,9 @@ public class Survey {
         return component.getSummaryProperties().containsKey(FIELD_FORM);
     }
 
-    public String getType() {
-        return component.getSummaryStringProperty(FIELD_TYPE);
-    }
+//    public String getType() {
+//        return component.getSummaryStringProperty(FIELD_TYPE);
+//    }
 
     public String getId() {
         try {

@@ -20,7 +20,7 @@ public class PushOrder {
             STATE_ABORTED = 95,
             STATE_PENDING = 15,
             STATE_DROPPED = 1,
-            STATE_FLAG_FINISHED = 65;
+            FLAG_STATE_FINISHED = 65;
     public final static String TAG = "pushOrder";
     String id;
     long createAt = System.currentTimeMillis();
