@@ -45,7 +45,8 @@ public class Survey implements QPackage {
     }
 
     public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
-        Component component = ComponentManager.getInstance().fetch(qPackage).getComponent(NAMESPACE);
+        ComponentManager.ComponentInfos infos = ComponentManager.getInstance().fetch(qPackage);
+        Component component = infos.getComponent(NAMESPACE);
         if (component == null) {
             throw new InvalidSurveyException(qPackage);
         }
