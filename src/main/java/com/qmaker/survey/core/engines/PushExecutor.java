@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public final class PushExecutor {
+    public final static String TAG = "PushExecutor";
     final List<String> managedTaskIds = Collections.synchronizedList(new ArrayList<String>());
     final List<Task> pendingTasks = Collections.synchronizedList(new ArrayList<Task>());
     final List<Task> processingTasks = Collections.synchronizedList(new ArrayList<Task>());
@@ -156,7 +157,7 @@ public final class PushExecutor {
     private void reorderList(List<Task> pendingTasks, Task retrievedTask, int priority) {
         synchronized (pendingTasks) {
             int fromIndex = pendingTasks.indexOf(retrievedTask);
-            if (fromIndex < 0) {
+            if (fromIndex < 0 || priority < 0) {
                 return;
             }
             Collections.swap(pendingTasks, fromIndex, priority);
@@ -181,7 +182,7 @@ public final class PushExecutor {
             processingTasks.add(task);
         }
         synchronized (pendingTasks) {
-            pendingTasks.add(task);
+            pendingTasks.remove(task);
         }
         try {
             task.attachTo(pusher.push(task.getOrder(), callback));
