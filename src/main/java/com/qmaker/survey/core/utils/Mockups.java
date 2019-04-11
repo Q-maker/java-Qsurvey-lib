@@ -11,6 +11,7 @@ import com.qmaker.core.utils.MockUps;
 import com.qmaker.survey.core.entities.Repository;
 import com.qmaker.survey.core.entities.Survey;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -76,6 +77,25 @@ public class Mockups {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Survey applyBlockingSurvey(QPackage qPackage, String surveyId) throws IOException, Survey.InvalidSurveyException {
+        ComponentManager componentManager = ComponentManager.getInstance();
+        componentManager.apply(getBlockingSurveyComponentDefinition(surveyId), qPackage);
+        Survey survey = Survey.from(qPackage);
+        return survey;
+    }
+
+    public static Component.Definition getBlockingSurveyComponentDefinition(String id) {
+        final String defaultMessage = "CopySheet sent successfully.";
+        final String processingMessage = "Please Wait...";
+        Survey.DefinitionBuilder builder = new Survey.DefinitionBuilder();
+        builder.setBlockingPublisherAllowed(true)
+                .setDefaultCompletionMessage(defaultMessage)
+                .setProcessingMessage(processingMessage)
+                .appendRepository(mockUpFirebaseDbRepository(id));
+        Component.Definition def = builder.create();
+        return def;
     }
 
     public static Survey anonymousSurvey() {
@@ -149,7 +169,7 @@ public class Mockups {
     }
 
     public static Repository mockUpFirebaseDbRepository(String id) {
-        return mockUpRepository(id, "firebase_db");
+        return mockUpRepository(id, "firebase");
     }
 
     private static Author author() {

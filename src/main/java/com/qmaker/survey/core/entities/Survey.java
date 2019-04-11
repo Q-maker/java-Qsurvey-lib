@@ -9,7 +9,6 @@ import com.qmaker.core.entities.QSummary;
 import com.qmaker.core.entities.Questionnaire;
 import com.qmaker.core.entities.Test;
 import com.qmaker.core.io.QPackage;
-import com.qmaker.core.utils.Bundle;
 import com.qmaker.core.utils.ToolKits;
 
 import java.io.IOException;
@@ -46,7 +45,7 @@ public class Survey implements QPackage {
 
     public final static Survey from(QPackage qPackage) throws InvalidSurveyException {
         ComponentManager.ComponentInfos infos = ComponentManager.getInstance().fetch(qPackage);
-        Component component = infos.getComponent(NAMESPACE);
+        Component component = infos.getDeclaredComponent(NAMESPACE);
         if (component == null) {
             throw new InvalidSurveyException(qPackage);
         }
