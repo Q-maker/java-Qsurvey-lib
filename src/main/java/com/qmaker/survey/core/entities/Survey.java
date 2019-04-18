@@ -19,6 +19,7 @@ import java.util.List;
 
 import istat.android.base.tools.TextUtils;
 
+//TODO proposer une propriété qui specifi si la copySheet doit être envoyé même si le test a été canceled.
 //TODO determiner la pertinance de proposer une configuration qui demande de spécifier l'auteur [avec certain champs requis] de la survey.
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
 public class Survey implements QPackage {
