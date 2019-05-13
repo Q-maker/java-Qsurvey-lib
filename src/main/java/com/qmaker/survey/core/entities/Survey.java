@@ -19,6 +19,7 @@ import java.util.List;
 
 import istat.android.base.tools.TextUtils;
 
+//TODO une survey doit pouvoir specifier si les resultat serot envoyé automatiquement a la fin du test ou si cela devra necessité une action de l'utilisateur [Envoyé] cala peut être necessaire dans le cas d'un IntentShare
 //TODO proposer une propriété qui specifi si la copySheet doit être envoyé même si le test a été canceled.
 //TODO determiner la pertinance de proposer une configuration qui demande de spécifier l'auteur [avec certain champs requis] de la survey.
 //Les destination doivent être une liste. afin qu'une survey puisse être envoyé vers plusieurs zone.
