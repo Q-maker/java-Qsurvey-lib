@@ -191,7 +191,7 @@ public class QSurvey implements QRunner.StateListener, PushExecutor.ExecutionSta
     }
 
     private List<PushOrder> handleSurveyResultAsPushOrder(Survey.Result result) {
-        List<Repository> repositories = result.getOrigin().getRepositories();
+        List<Repository> repositories = result.getSource().getRepositories();
         List<PushOrder> out = new ArrayList<>();
         PushOrder order;
         for (Repository repo : repositories) {

@@ -1,2 +1,2 @@
 -Avant de procéder au push, l'uri de la repository peut être recalculé en insérant des variable la ou l'uri a les mention {varName}, c'est var name prise dans le formulaire rensigné.
--
+-Ajouter a la survey un propriété qui permet de determiner les finishState qui peuvent être collecté (Cancel, complete, timeOut)

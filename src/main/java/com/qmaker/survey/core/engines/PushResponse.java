@@ -10,5 +10,5 @@ public interface PushResponse {
 
     int getCode();
 
-    <T> T getContent();
+    <T> T getSource();
 }

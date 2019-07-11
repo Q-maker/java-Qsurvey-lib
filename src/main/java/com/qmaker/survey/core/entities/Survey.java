@@ -93,8 +93,8 @@ public class Survey implements QPackage {
     }
 
     @Override
-    public boolean exist() {
-        return component.getQPackage().exist();
+    public boolean exists() {
+        return component.getQPackage().exists();
     }
 
     @Override
@@ -231,7 +231,7 @@ public class Survey implements QPackage {
         }
 
         public InvalidSurveyException(QPackage qPackage) {
-            super("This qpackage doesn't content any Survey component." + (qPackage != null ? " uri" + qPackage.getUriString() : ""));
+            super("This qpackage doesn't content any Survey component." + (qPackage != null ? " uri=" + qPackage.getUriString() : ""));
         }
     }
 
@@ -364,7 +364,7 @@ public class Survey implements QPackage {
             return Test.copy(test);
         }
 
-        public Survey getOrigin() {
+        public Survey getSource() {
             return Survey.this;
         }
 

@@ -48,7 +48,7 @@ public class PushError extends Exception implements PushResponse {
     }
 
     @Override
-    public PushOrder getContent() {
+    public PushOrder getSource() {
         return content;
     }
 }

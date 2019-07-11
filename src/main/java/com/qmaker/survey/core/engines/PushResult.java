@@ -4,18 +4,18 @@ import com.qmaker.survey.core.entities.PushOrder;
 
 //TODO reflechir au bien fonder de retourner l'ordre envoyé.
 public class PushResult implements PushResponse {
-    private final PushOrder content;
+    private final PushOrder source;
     String message;
     int code = CODE_DEFAULT_SUCCESS;
 
-    public PushResult(PushOrder content) {
-        this("success", CODE_DEFAULT_SUCCESS, content);
+    public PushResult(PushOrder source) {
+        this("success", CODE_DEFAULT_SUCCESS, source);
     }
 
-    public PushResult(String message, int code, PushOrder content) {
+    public PushResult(String message, int code, PushOrder source) {
         this.message = message;
         this.code = code;
-        this.content = content;
+        this.source = source;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class PushResult implements PushResponse {
     }
 
     @Override
-    public PushOrder getContent() {
-        return content;
+    public PushOrder getSource() {
+        return source;
     }
 }
